@@ -2357,11 +2357,10 @@ df.resample('D').interpolate('linear')
 
 ************************
 
-#搞到这里
 ## 14、pandas的IO操作
 
-```
-#原始数据
+```python
+# 原始数据
    S.No    Name  Age       City  Salary
 0     1     Tom   28    Toronto   20000
 1     2     Lee   32   HongKong    3000
@@ -2369,19 +2368,21 @@ df.resample('D').interpolate('linear')
 3     4     Ram   38  Hyderabad    3900
 
 '''csv文件'''
-#读取
+# 读取
 df = pd.read_csv('01.csv')
 
-#指定索引列
+
+# 指定索引列
 df=pd.read_csv("01.csv",index_col=['S.No'])
 --->        Name  Age       City  Salary
-    S.No                                
+    S.No
     1        Tom   28    Toronto   20000
     2        Lee   32   HongKong    3000
     3     Steven   43   Bay Area    8300
     4        Ram   38  Hyderabad    3900
 
-#修改指定列的数据类型
+
+# 修改指定列的数据类型
 df=pd.read_csv("01.csv",index_col=['S.No'],dtype = {'Salary':np.float64})
 df2.dtypes
 --->Name      object
@@ -2390,7 +2391,8 @@ df2.dtypes
     Salary     float64      #由导入默认的int64 ---> float64
     dtype: object
 
-#重新标注并取代默认导入的列名称
+
+# 重新标注并取代默认导入的列名称
 df=pd.read_csv("01.csv",names=['a','b','c','d','e'],header=0)
 --->   a       b   c          d      e      #列名称变了，如果没有参数 header=0，保留原列名称行
     0  1     Tom  28    Toronto  20000
@@ -2398,79 +2400,77 @@ df=pd.read_csv("01.csv",names=['a','b','c','d','e'],header=0)
     2  3  Steven  43   Bay Area   8300
     3  4     Ram  38  Hyderabad   3900
 
-#跳过指定行数
+
+# 跳过指定行数
 df=pd.read_csv("01.csv", skiprows=2)
 --->   2     Lee  32   HongKong  3000      #！列名称
     0  3  Steven  43   Bay Area  8300
     1  4     Ram  38  Hyderabad  3900
-```
-```
+
+------------------------------------------
 '''excel文件'''
-#读取
+# 读取
 with pd.ExcelFile('01.xlsx') as xlsx:
     df1 = pd.read_excel(xlsx,'Sheet1')
     df2 = pd.read_excel(xlsx,'Sheet2')
 
-#查看表格统计信息
-df1.info()
----><class 'pandas.core.frame.DataFrame'>
-    RangeIndex: 233614 entries, 0 to 233613
-    Data columns (total 3 columns):
-    用户名     233614 non-null object
-    真实姓名    141860 non-null object
-    注册时间    233614 non-null object
-    dtypes: object(3)
-    memory usage: 14.3+ MB
-    None
 
-#写入
+# 写入
 df.to_excel('001.xlsx')      #参数 index = False 可以不输出行索引
 ```
-![IO文件类型](https://upload-images.jianshu.io/upload_images/4353065-05ae226d53de30d3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+![IO文件类型](IO文件类型.png)
+
 ************************
+
 ## 15、pandas的可视化操作
-```
-'''示例数据组1'''
+
+```python
+# 示例数组1
 df = pd.DataFrame(np.random.rand(10,4),columns=list('ABCD'))
 
-#折线图
+# 折线图
 df.plot()
 
-#条形图
+# 条形图
 df.plot.bar()
 
-#堆积条形图
+# 堆积条形图
 df.plot.bar()
 
-#水平条形图
+# 水平条形图
 df.plot.barh()
 
-#水平堆积条形图
+# 水平堆积条形图
 df.plot.barh(stacked=True)
-```
-```
-'''示例数据组2'''
-df = pd.DataFrame({'a':np.random.randn(1000)+1,'b':np.random.randn(1000),'c':
-np.random.randn(1000) - 1}, columns=['a', 'b', 'c'])
 
-#直方图，按列分图
-df.plot.hist(bins=50)      #列合并在一张图，参数bins表示宽度
-df.hist(bins=20)      #几列就几张图
+# 示例数组2
+df = pd.DataFrame({'a':np.random.randn(1000)+1,
+                   'b':np.random.randn(1000),
+                   'c':np.random.randn(1000) - 1},
+                   columns=['a', 'b', 'c'])
 
-#箱形图
+# 直方图，按列分图
+df.plot.hist(bins=50)      # 列合并在一张图，参数bins表示宽度
+df.hist(bins=20)      # 几列就几张图
+
+# 箱形图
 df.plot.box()
 
 #散点图
-df.plot.scatter(x='a', y='b')      #x，y代表横纵坐标轴
+df.plot.scatter(x='a', y='b')      # x，y代表横纵坐标轴
 
-#饼图
+# 饼图
 df.plot.pie(subplots=True)
 ```
+
 ************************
+
 ## 16、Pandas的类SQL用法
-```
+
+```python
 '''Pandas的类SQL用法'''
-#示例数组
+# 示例数组
 total_bill tip sex smoker day time size
 59 48.27 6.73 Male No Sat Dinner 4
 125 29.80 4.20 Female No Thur Lunch 6
@@ -2486,8 +2486,9 @@ total_bill tip sex smoker day time size
 212 48.33 9.00 Male No Sat Dinner 4
 216 28.15 3.00 Male Yes Sat Dinner 5
 
-#SELECT用法
-tips[['total_bill', 'tip', 'smoker', 'time']].head(5)      #查询某几列，.head(n)返回前n行  
+------------------------------------------
+# SELECT用法
+tips[['total_bill', 'tip', 'smoker', 'time']].head(5)   # 查询某几列，.head(n)返回前n行  
 --->   total_bill   tip smoker    time
     0       16.99  1.01     No  Dinner
     1       10.34  1.66     No  Dinner
@@ -2496,9 +2497,8 @@ tips[['total_bill', 'tip', 'smoker', 'time']].head(5)      #查询某几列，.h
     4       24.59  3.61     No  Dinner
 
 ------------------------------------------
-
-#WHERE用法
-tips[tips['time'] == 'Dinner'].head(5)      #附加查询条件
+# WHERE用法
+tips[tips['time'] == 'Dinner'].head(5)      # 附加查询条件
 --->   total_bill   tip     sex smoker  day    time  size
     0       16.99  1.01  Female     No  Sun  Dinner     2
     1       10.34  1.66    Male     No  Sun  Dinner     3
@@ -2507,21 +2507,20 @@ tips[tips['time'] == 'Dinner'].head(5)      #附加查询条件
     4       24.59  3.61  Female     No  Sun  Dinner     4
 
 ------------------------------------------
-
-#GroupBy用法
-tips.groupby('sex').size()      #计算性别人数      
+# GroupBy用法
+tips.groupby('sex').size()  # 计算性别人数
 --->sex
     Female    2
     Male      3
     dtype: int64
 
-tips.groupby('sex')['total_bill'].count()      #计算total_bill列下的性别人数
+tips.groupby('sex')['total_bill'].count()   # 计算total_bill列下的性别人数
 --->sex
     Female 2
     Male 3
     Name: total_bill, dtype: int64
 
-tips.groupby('day').agg({'tip': np.mean, 'day': np.size})      #求均值
+tips.groupby('day').agg({'tip': np.mean, 'day': np.size})   # 求均值
 --->    tip day
 day
 Fri 2.734737 19
@@ -2535,12 +2534,14 @@ No    Fri 4.0 2.812500
         Sat 45.0 3.102889
 Yes    Fri 15.0 2.714000
         Sat 42.0 2.875476
+```
 
-```
 ************************
+
 ## 17、pandas的透视表操作
-```
-#示例数组
+
+```python
+# 示例数组
 df = pd.DataFrame(data={'Province' : ['ON','QC','BC','AL','AL','MN','ON'],
                         'City' : ['Toronto','Montreal','Vancouver','Calgary','Edmonton','Winnipeg','Windsor'],
                         'Sales' : [13,6,16,8,4,3,1]})
@@ -2552,26 +2553,28 @@ df = pd.DataFrame(data={'Province' : ['ON','QC','BC','AL','AL','MN','ON'],
     4   Edmonton       AL      4
     5   Winnipeg       MN      3
     6    Windsor       ON      1
-```
-```
-#创建透视表
-table = pd.pivot_table(df,values=['City'],index=['Province'],columns=['City'],aggfunc=np.size)
 
---->           Sales                                                     
+------------------------------------------
+# 创建透视表
+table = pd.pivot_table(df,
+                        index=['Province'],
+                        columns=['City'],
+                        values=['City'],
+                        aggfunc=np.size)
+--->           Sales
     City     Calgary Edmonton Montreal Toronto Vancouver Windsor Winnipeg
-    Province                                                             
+    Province
     AL           1.0      1.0      NaN     NaN       NaN     NaN      NaN
     BC           NaN      NaN      NaN     NaN       1.0     NaN      NaN
     MN           NaN      NaN      NaN     NaN       NaN     NaN      1.0
     ON           NaN      NaN      NaN     1.0       NaN     1.0      NaN
     QC           NaN      NaN      1.0     NaN       NaN     NaN      NaN
-```
-```
-#把二维透视表转成一维，同上区别
-table.stack('City')
 
+------------------------------------------
+# 把二维透视表转成一维，同上区别
+table.stack('City')
 --->                    Sales
-    Province City            
+    Province City
     AL       Calgary      1.0
              Edmonton     1.0
     BC       Vancouver    1.0
@@ -2580,10 +2583,13 @@ table.stack('City')
              Windsor      1.0
     QC       Montreal     1.0
 ```
+
 ************************
+
 ## 18、其他
-```
-#判断单个值是否存在
+
+```python
+# 判断单个值是否存在
 s = pd.Series(range(5))
 print (s==4)
 --->0    False
@@ -2594,16 +2600,12 @@ print (s==4)
     dtype: bool
 
 ------------------------------------------
-
-#判断多个值是否存在
+# 判断多个值是否存在
 s = pd.Series(list('abc'))
-x = s.isin(['a', 'c', 'e'])      #返回的是系列的bool值
-print (x)      
+x = s.isin(['a', 'c', 'e'])      # 返回的是系列的bool值
+print (x)
 --->0     True
     1    False
     2     True
     dtype: bool
 ```
-************************
-
-> # [Pandas常用命令对照清单](http://www.cnblogs.com/everfight/p/pandas_data_sheet.html)
