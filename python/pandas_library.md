@@ -1617,7 +1617,6 @@ df = pd.DataFrame({'Team': ['Riders', 'Riders', 'Devils',],
     2     863     2  Devils  2014
 
 ------------------------------------------
-
 # 按 指定列 分组
 df.groupby('Team')      # 返回的是地址
 ---><pandas.core.groupby.DataFrameGroupBy object at 0x000000000705FC18>
@@ -1685,43 +1684,40 @@ df.groupby('Team')['Points'].agg([np.mean,np.sum,np.size])
     Riders  832.5  1665     2
 ```
 
-# 搞到这里
 ```python
 '''分组后的函数运用'''
-apply函数
 
-#定义函数top
+apply函数
+# 定义函数 top
 def top(df,n = 3, column = 'Year'):
     return df.sort_values(by=column, ascending=False)[:n]
 
-#在组内调用函数
+# 在组内调用函数
 df.groupby('Team').apply(top)
 --->          Points  Rank    Team  Year
-    Team                                
+    Team
     Devils 2     863     2  Devils  2014      #对每个Team按Year排倒序，并返回前3行
     Riders 1     789     2  Riders  2015
            0     876     1  Riders  2014
 
-#可以直接在apply内对调用的函数传递参数
+# 可以直接在apply内对调用的函数传递参数
 df.groupby('Team').apply(top,n = 1,column = 'Rank')
 --->          Points  Rank    Team  Year
-    Team                                
+    Team
     Devils 2     863     2  Devils  2014
     Riders 1     789     2  Riders  2015
 
-----------------------------------------------------------
-
+-------------------------------------------
 transform函数
 
 score = lambda x: (x - x.mean()) / x.std()*10
-df.groupby('Team').transform(score)      #运用自定义公式
+df.groupby('Team').transform(score)      # 运用自定义公式
 --->     Points      Rank      Year
     0  7.071068 -7.071068 -7.071068
     1 -7.071068  7.071068  7.071068
     2       NaN       NaN       NaN
 
-------------------------------------------
-
+-------------------------------------------
 filter函数
 
 filter = df.groupby('Team').filter(lambda x: len(x) >= 2)      #过滤行数
@@ -1729,9 +1725,12 @@ filter = df.groupby('Team').filter(lambda x: len(x) >= 2)      #过滤行数
     0     876     1  Riders  2014
     1     789     2  Riders  2015
 ```
+
 ************************
+
 ## 12、pandas的连接操作
-```
+
+```python
 '''两个数组的左右合并-merge函数'''
 
 #示例数组1
@@ -1751,21 +1750,22 @@ right = pd.DataFrame(
     3   Alice   4       sub6
     4  Ayoung   5       sub5
 ========================================
-    Name  id subject_id
+        Name  id subject_id
     0  Billy   1       sub2
     1  Brian   2       sub4
     2   Bran   3       sub3
     3  Bryce   4       sub6
     4  Betty   5       sub5
-```
-```
-#根据1个或多个条件列合并
-rs = pd.merge(left,right,on=['id','subject_id'])      #合并条件=id&subject_id
+
+-------------------------------------------
+# 根据1个或多个条件列合并
+rs = pd.merge(left,right,on=['id','subject_id'])      # 合并条件=id&subject_id
 --->   Name_x  id subject_id Name_y
     0   Alice   4       sub6  Bryce
     1  Ayoung   5       sub5  Betty
+
 ------------------------------------------
-#左/右连接
+# 左/右连接
 rs = pd.merge(left, right, on='subject_id', how='left')      #same as how = 'right'
 --->   Name_x  id_x subject_id Name_y  id_y
     0    Alex     1       sub1    NaN   NaN
@@ -1773,8 +1773,9 @@ rs = pd.merge(left, right, on='subject_id', how='left')      #same as how = 'rig
     2   Allen     3       sub4  Brian   2.0
     3   Alice     4       sub6  Bryce   4.0
     4  Ayoung     5       sub5  Betty   5.0
+
 ------------------------------------------
-#merge默认内连接，通过how参数修改为外连接
+# merge默认内连接，通过how参数修改为外连接
 rs = pd.merge(left, right, how='outer', on='subject_id')
 --->   Name_x  id_x subject_id Name_y  id_y
     0    Alex   1.0       sub1    NaN   NaN
@@ -1783,26 +1784,29 @@ rs = pd.merge(left, right, how='outer', on='subject_id')
     3   Alice   4.0       sub6  Bryce   4.0
     4  Ayoung   5.0       sub5  Betty   5.0
     5     NaN   NaN       sub3   Bran   3.0
+
 ------------------------------------------
-#！内连接效果，同上区别
+# ！内连接效果，同上区别
 rs = pd.merge(left, right, on='subject_id')
 --->   Name_x  id_x subject_id Name_y  id_y
     0     Amy     2       sub2  Billy     1
     1   Allen     3       sub4  Brian     2
     2   Alice     4       sub6  Bryce     4
     3  Ayoung     5       sub5  Betty     5
-------------------------------------------
-#改变连接关键列的名称
-left = left.rename(columns = {'id':'left_id'})
-right = right.rename(columns = {'id':'left_id'})
 
-#连接函数有变化
+------------------------------------------
+# 连接函数有变化
+left = left.rename(columns = {'id':'left_id'})  # 改变连接关键列的名称
+right = right.rename(columns = {'id':'right_id'})   # 改变连接关键列的名称
+
 pd.merge(left,right,left_on = 'left_id',right_on = 'right_id')
 --->略
 ```
-```
+
+```python
 '''两个数组的 “上下”/“左右” 合并-concat函数'''
-#示例数组2
+
+# 示例数组2
 df1 = pd.DataFrame(np.ones((3,4))*0, columns=['a','b','c','d'],index=[0,1,2])
 df2 = pd.DataFrame(np.ones((3,4))*1, columns=['e','b','c','d'],index=[1,2,3])
 --->     a    b    c    d
@@ -1814,6 +1818,7 @@ df2 = pd.DataFrame(np.ones((3,4))*1, columns=['e','b','c','d'],index=[1,2,3])
     1  1.0  1.0  1.0  1.0
     2  1.0  1.0  1.0  1.0
     3  1.0  1.0  1.0  1.0
+
 ------------------------------------------
 #1、默认上下合并,可修改 axis=1 为左右合并
 #2、默认外连接，可修改 join='inner' 为内连接,内连接去除带NaN的列
@@ -1826,9 +1831,11 @@ rs = pd.concat([df1,df2])
     1  NaN  1.0  1.0  1.0  1.0
     2  NaN  1.0  1.0  1.0  1.0
     3  NaN  1.0  1.0  1.0  1.0
+
 ------------------------------------------
 '''dataframe和series合并'''
-#创建系列s
+
+# 创建系列s
 s = pd.Series(np.random.randn(5))
 --->
 0   -0.280951
@@ -1838,7 +1845,7 @@ s = pd.Series(np.random.randn(5))
 4    1.091512
 dtype: float64
 
-#创建数据帧df
+# 创建数据帧df
 df = pd.DataFrame(np.arange(9).reshape(3,3),columns = ['col1','col2','col3'])
 --->
    col1  col2  col3
@@ -1846,8 +1853,7 @@ df = pd.DataFrame(np.arange(9).reshape(3,3),columns = ['col1','col2','col3'])
 1     3     4     5
 2     6     7     8
 
-
-#df和s延横轴合并
+# df和s延横轴合并
 df_concat = pd.concat([df,s],axis = 1)
 --->
    col1  col2  col3         0
@@ -1857,7 +1863,7 @@ df_concat = pd.concat([df,s],axis = 1)
 3   NaN   NaN   NaN  0.347614
 4   NaN   NaN   NaN  1.091512
 
-#df和s延纵轴合并
+# df和s延纵轴合并
 df_concat = pd.concat([df,s],axis = 0)
 --->
    col1  col2  col3         0
@@ -1870,9 +1876,11 @@ df_concat = pd.concat([df,s],axis = 0)
 3   NaN   NaN   NaN  0.347614
 4   NaN   NaN   NaN  1.091512
 ```
-```
+
+```python
 '''两个数组的上下合并-append函数'''
-#append只有纵向合并，没有横向合并
+
+# append只有纵向合并，没有横向合并
 rs = df1.append([df1,df2],ignore_index=True)
 --->     a    b    c    d    e
     0  0.0  0.0  0.0  0.0  NaN
@@ -1884,18 +1892,22 @@ rs = df1.append([df1,df2],ignore_index=True)
     6  0.0  0.0  0.0  0.0  NaN
     7  0.0  0.0  0.0  0.0  NaN
     8  0.0  0.0  0.0  0.0  NaN
+
 ------------------------------------------
-#也可以与Series系列合并，同concat合并区别！
+# 也可以与Series系列合并，同concat合并区别！
 s1 = pd.Series([1,2,3,4], index=['a','b','c','d'])
+
 rs = df1.append(s1,ignore_index=True)
 --->     a    b    c    d
     0  0.0  0.0  0.0  0.0
     1  0.0  0.0  0.0  0.0
     2  0.0  0.0  0.0  0.0
-    3  1.0  2.0  3.0  4.0
+    3  1.0  2.0  3.0  4.0   # s1连接在最后
 ```
-```
+
+```python
 '''部分重合 的数据合并-combine_first'''
+
 s1 = pd.Series(np.arange(5))
 --->
 0    0
@@ -1904,6 +1916,7 @@ s1 = pd.Series(np.arange(5))
 3    3
 4    4
 dtype: int32
+
 s2 = pd.Series(np.arange(2,7),index = [1,2,3,4,5])
 --->
 1    2
@@ -1913,7 +1926,8 @@ s2 = pd.Series(np.arange(2,7),index = [1,2,3,4,5])
 5    6
 dtype: int32
 
-#以s1的数值优先如果没有则用s2的数字补充
+------------------------------------------
+# 以s1的数值优先，如果没有则用s2的数字补充
 s1.combine_first(s2)
 --->
 0    0.0
@@ -1924,8 +1938,10 @@ s1.combine_first(s2)
 5    6.0
 dtype: float64
 ```
-```
+
+```python
 '''近似匹配'''
+
 left = pd.DataFrame({'a': [1, 5, 10], 'left_val': ['a', 'b', 'c']})
 --->
     a left_val
@@ -1942,15 +1958,18 @@ right = pd.DataFrame({'a': [1, 2, 3, 6, 7],'right_val': [1, 2, 3, 6, 7]})
 3  6          6
 4  7          7
 
-#只有左连接，根据left的'a'列，在right的'a'列查找比其小且最接近的值，同excel的vlookup模糊查找
+------------------------------------------
+# 只有左连接，根据left的'a'列，在right的'a'列查找比其小且最接近的值，同excel的vlookup模糊查找
 pd.merge_asof(left, right, on='a')  #可选参数direction : ‘backward’ (default),‘forward’, or ‘nearest’
 --->
     a left_val  right_val
 0   1        a          1
 1   5        b          3
 2  10        c          7
+
 ------------------------------------------
->>> quotes
+# 示例数据
+--->quotes
                      time ticker     bid     ask
 0 2016-05-25 13:30:00.023   GOOG  720.50  720.93
 1 2016-05-25 13:30:00.023   MSFT   51.95   51.96
@@ -1961,7 +1980,7 @@ pd.merge_asof(left, right, on='a')  #可选参数direction : ‘backward’ (def
 6 2016-05-25 13:30:00.072   GOOG  720.50  720.88
 7 2016-05-25 13:30:00.075   MSFT   52.01   52.03
 
->>> trades
+--->trades
                      time ticker   price  quantity
 0 2016-05-25 13:30:00.023   MSFT   51.95        75
 1 2016-05-25 13:30:00.038   MSFT   51.95       155
@@ -1969,11 +1988,11 @@ pd.merge_asof(left, right, on='a')  #可选参数direction : ‘backward’ (def
 3 2016-05-25 13:30:00.048   GOOG  720.92       100
 4 2016-05-25 13:30:00.048   AAPL   98.00       100
 
-#在相同'ticker'条件下查找time最接近的值
+# 在相同'ticker'条件下查找`time`最接近的值
 pd.merge_asof(trades, quotes,
-...                       on='time',
-...                       by='ticker',
-...                       tolerance=pd.Timedelta('2ms'))
+                       on='time',
+                       by='ticker',
+                       tolerance=pd.Timedelta('2ms'))
 --->
                      time ticker   price  quantity     bid     ask
 0 2016-05-25 13:30:00.023   MSFT   51.95        75   51.95   51.96
@@ -1982,62 +2001,93 @@ pd.merge_asof(trades, quotes,
 3 2016-05-25 13:30:00.048   GOOG  720.92       100  720.50  720.93
 4 2016-05-25 13:30:00.048   AAPL   98.00       100     NaN     NaN
 ```
+
 ************************
+
 ## 13、pandas的时间/日期操作
-```
+
+```python
 '''对时间操作'''
-#获取当前时间
+
+# 获取当前时间
 pd.datetime.now()  --->2018-04-17 18:28:29.033226
 
-#创建一个时间戳
-pd.Timestamp('2018-11-01')  --->2018-11-01 00:00:00      #1
-pd.Timestamp(0,unit='s')  --->1970-01-01 00:00:00      #2
+------------------------------------------
+# 创建一个时间戳
+pd.Timestamp('2018-11-01')  --->2018-11-01 00:00:00
+pd.Timestamp(0,unit='s')  --->1970-01-01 00:00:00
 
-#改变时间显示格式
-#原格式
-dtnow = pd.to_datetime('today')  --->Timestamp('2018-08-07 00:00:00')
-#修改后格式
-dtnow.strftime('%y-%m-%d')  --->'18-08-07'
+------------------------------------------
+# 改变时间显示格式
+dtnow = pd.to_datetime('today')  --->Timestamp('2018-08-07 00:00:00')   # 原格式
+dtnow.strftime('%y-%m-%d')  --->'18-08-07'  # 修改后格式
 
-#把不同格式时间转换为一样的时间戳
-#！同时将格式转换为datetime64[ns]
+------------------------------------------
+# 把不同格式时间转换为一样的时间戳
+# ！同时将格式转换为datetime64[ns]
 pd.to_datetime(pd.Series(['Jul 31, 2009','2019-10-10', None]))
---->0   2009-07-31    
+--->0   2009-07-31
     1   2019-10-10
     2          NaT
     dtype: datetime64[ns]
 
-#创建一个时间范围
-#！通过修改 freq='H' 参数可按小时累加
+------------------------------------------
+# 创建一个时间范围
+# ！通过修改 freq='H' 参数可按小时累加
 pd.date_range("12:00", "13:59", freq="30min")
---->DatetimeIndex(['2018-04-17 12:00:00', '2018-04-17 12:30:00','2018-04-17 13:00:00', '2018-04-17 13:30:00'],dtype='datetime64[ns]', freq='30T')
+--->DatetimeIndex(['2018-04-17 12:00:00',
+                   '2018-04-17 12:30:00',
+                   '2018-04-17 13:00:00',
+                   '2018-04-17 13:30:00'],dtype='datetime64[ns]', freq='30T')
 ```
-```
+
+```python
 '''对日期操作'''
-#创建日期范围
-#！通过修改 freq='M' 参数可按月或按年累加
+
+# 创建日期范围
+# ！通过修改 freq='M' 参数可按月或按年累加
 pd.date_range('2011/11/03', periods=5)
---->DatetimeIndex(['2011-11-03', '2011-11-04', '2011-11-05', '2011-11-06','2011-11-07'],dtype='datetime64[ns]', freq='D')
+--->DatetimeIndex(['2011-11-03',
+                   '2011-11-04',
+                   '2011-11-05',
+                   '2011-11-06',
+                   '2011-11-07'],dtype='datetime64[ns]', freq='D')
 
-#通过指定偏移量
-sum_offset = pd.tseries.offsets.Week(2)      #偏移量为2周
+------------------------------------------
+# 通过指定偏移量
+sum_offset = pd.tseries.offsets.Week(2)      # 偏移量为2周
 pd.date_range('1/1/2018', periods=10, freq=sum_offset)
---->DatetimeIndex(['2018-01-08', '2018-01-22', '2018-02-05', '2018-02-19',
-               '2018-03-05'],dtype='datetime64[ns]', freq='2W')
+--->DatetimeIndex(['2018-01-08',
+                   '2018-01-22',
+                   '2018-02-05',
+                   '2018-02-19',
+                   '2018-03-05'],dtype='datetime64[ns]', freq='2W')
 
+------------------------------------------
 #！同上区别，创建<工作日>日期范围
-pd.bdate_range('2011/11/03', periods=5)      #pd.bdate_range  /  没了11/5和11/6
---->DatetimeIndex(['2011-11-03', '2011-11-04', '2011-11-07', '2011-11-08','2011-11-09'],dtype='datetime64[ns]', freq='B')      
+pd.bdate_range('2011/11/03', periods=5)      # pd.bdate_range  /  没了11/5和11/6
+--->DatetimeIndex(['2011-11-03',
+                   '2011-11-04',
+                   '2011-11-07',
+                   '2011-11-08',
+                   '2011-11-09'],dtype='datetime64[ns]', freq='B')
 
-#给定开始和结束日期，创建一个日期范围
+------------------------------------------
+# 给定开始和结束日期，创建一个日期范围
 start = pd.datetime(2017, 11, 1)
 end = pd.datetime(2017, 11, 5)
+
 dates = pd.date_range(start, end)
---->DatetimeIndex(['2017-11-01', '2017-11-02', '2017-11-03', '2017-11-04','2017-11-05'],dtype='datetime64[ns]', freq='D')
+--->DatetimeIndex(['2017-11-01',
+                   '2017-11-02',
+                   '2017-11-03',
+                   '2017-11-04',
+                   '2017-11-05'],dtype='datetime64[ns]', freq='D')
 ```
-```
-#示例日期
-rng = pd.date_range('1/1/2018', periods=10, freq='W-SAT')      #日期以周为频率，从指定日期“1/1/2018”之后的第一个周六开始，见结果
+
+```python
+# 示例日期
+rng = pd.date_range('1/1/2018', periods=10, freq='W-SAT')      # 日期以周为频率，从指定日期“1/1/2018”之后的第一个周六开始，见结果
 ts = pd.Series(np.arange(10), index=rng)
 --->2018-01-06    0
 2018-01-13    1
@@ -2052,12 +2102,13 @@ ts = pd.Series(np.arange(10), index=rng)
 Freq: W-SAT, dtype: int32
 
 '''索引日期'''
-#当日期列为行索引时,对日期进行索引
-ts[ts.index[2]]      #等同于ts['2018/01/13']、ts['20180113']
+# 当日期列为行索引时,对日期进行索引
+ts[ts.index[2]]      # 等同于ts['2018/01/13']、ts['20180113']
 --->2
 
-#以2为步长进行索引
-ts[::2]      #从前往后
+
+# 以2为步长进行索引
+ts[::2]      # 从前往后
 --->2018-01-06    0
 2018-01-20    2
 2018-02-03    4
@@ -2065,7 +2116,8 @@ ts[::2]      #从前往后
 2018-03-03    8
 Freq: 2W-SAT, dtype: int32
 
-#索引指定“年月”
+
+# 索引指定“年月”
 ts['2018-2']
 --->2018-02-03    4
 2018-02-10    5
@@ -2073,14 +2125,15 @@ ts['2018-2']
 2018-02-24    7
 Freq: W-SAT, dtype: int32
 
-#索引指定日期之后的
-#！注意before、after
+
+# 索引指定日期之后的
+# ！注意before、after
 ts.truncate(before='2018-3-1')
 --->2018-03-03    8
 2018-03-10    9
 Freq: W-SAT, dtype: int32
 
-#同上相反，索引指定日期之前的
+# 同上相反，索引指定日期之前的
 ts.truncate(after='2018-3-1')
 --->2018-01-06    0
 2018-01-13    1
@@ -2091,9 +2144,11 @@ ts.truncate(after='2018-3-1')
 2018-02-17    6
 2018-02-24    7
 Freq: W-SAT, dtype: int32
+
 ------------------------------------------
 '''移动数据'''
-#日期索引不变，数据值往后移动
+
+# 日期索引不变，数据值往后移动
 ts.shift(1)
 --->2018-01-06    NaN      #第一个数值变为NaN
 2018-01-13    0.0
@@ -2107,7 +2162,8 @@ ts.shift(1)
 2018-03-10    8.0
 Freq: W-SAT, dtype: float64
 
-#日期索引不变，数据值往前移动
+
+# 日期索引不变，数据值往前移动
 ts.shift(-1)
 2018-01-06    1.0
 2018-01-13    2.0
@@ -2120,38 +2176,41 @@ ts.shift(-1)
 2018-03-03    9.0
 2018-03-10    NaN      #最后一个数值变为NaN
 Freq: W-SAT, dtype: float64
-------------------------------------------
 
-#检查日期索引是否有重复
+
+# 检查日期索引是否有重复
 ts.index.is_unique
 --->True      #True=无重复
 
-#对日期索引进行分组
+# 对日期索引进行分组
 grouped = ts.groupby(level=0)      # level=0
+```
 
-```
-```
+```python
 '''时间差操作'''
-#创建一个时间差
-timediff = pd.Timedelta(6,unit='s')      #unit可以是'd','h','m','s'
-timediff = pd.Timedelta(seconds = 6)      #写法2                                                        
+
+# 创建一个时间差
+timediff = pd.Timedelta(6,unit='s')      # unit可以是'd','h','m','s'
+timediff = pd.Timedelta(seconds = 6)      # 写法2
 --->0 days 00:00:06
 
-#时间差的加减
+# 时间差的加减
 s = pd.Series(pd.date_range('2012-1-1', periods=3, freq='D'))
 td = pd.Series([ pd.Timedelta(days=i) for i in range(3) ])
+
 df = pd.DataFrame(dict(A = s, B = td))
 --->           A      B
     0 2012-01-01 0 days
     1 2012-01-02 1 days
     2 2012-01-03 2 days
 
-df['C']=df['A']+df['B']      #也可以作减法
+df['C']=df['A']+df['B']      # 也可以作减法
 --->           A      B          C
     0 2018-01-01 0 days 2018-01-01
     1 2018-01-02 1 days 2018-01-03
     2 2018-01-03 2 days 2018-01-05
 
+------------------------------------------
 # 计算时间间隔
 x = pd.Series(pd.date_range('2013-1-1', periods=3, freq='D'))
 --->
@@ -2176,12 +2235,18 @@ dtype: timedelta64[ns]
 2    366
 dtype: int64
 ```
-```
+
+```python
 '''时间数据重采样'''
+
 '''降采样'''
+
 #示例数组1，注意行索引和数据列都包含日期
-df = pd.DataFrame({'date': pd.date_range('2015-01-01', freq='W',periods=5),'a': np.arange(5)},
-    index=pd.MultiIndex.from_arrays([[1,2,3,4,5],pd.date_range('2015-01-01', freq='W',periods=5)],names=['v','d']))
+df = pd.DataFrame({'date': pd.date_range('2015-01-01', freq='W',periods=5),
+                   'a': np.arange(5)},
+                   index=pd.MultiIndex.from_arrays([[1,2,3,4,5],
+                                                    pd.date_range('2015-01-01', freq='W',periods=5)],
+                   names=['v','d']))
 
 --->              a       date
     v d                       
@@ -2191,22 +2256,23 @@ df = pd.DataFrame({'date': pd.date_range('2015-01-01', freq='W',periods=5),'a': 
     4 2015-01-25  3 2015-01-25
     5 2015-02-01  4 2015-02-01
 
-#按date列的日期以<月>为单位求a列的和
+
+# 按date列的日期以<月>为单位求a列的和
 df.resample('M', on='date').sum()
 --->            a
     date         
     2015-01-31  6
     2015-02-28  4
 
-#按索引d列的日期以<月>为单位求a列的和
-#！同上区别
+# 按索引d列的日期以<月>为单位求a列的和
+# ！同上区别
 df.resample('M', level='d').sum()
 --->            a
     d            
     2015-01-31  6
     2015-02-28  4
 ------------------------------------------
-#示例数组2
+# 示例数组2
 df = pd.DataFrame({'a': [1]*100},
     index=pd.date_range('2018-01-01', periods = 100))
 --->            a
@@ -2216,7 +2282,7 @@ df = pd.DataFrame({'a': [1]*100},
     2018-01-04  1
     2018-01-05  1
 
-#按5天采样，并计算5天中的开盘、收盘、最高、最低值
+# 按5天采样，并计算5天中的开盘、收盘、最高、最低值
 df.resample('5D').ohlc()
 --->              a               
                open high low close
@@ -2226,23 +2292,24 @@ df.resample('5D').ohlc()
     2018-04-01    1    1   1     1
     2018-04-06    1    1   1     1
 
-#按月份重采样，注意用的是groupby()
+# 按月份重采样，注意用的是groupby()
 df.groupby(lambda x: x.month).sum()
 --->    a
     1  31
     2  28
     3  31
     4  10
-```
-```
+
+------------------------------------------
 '''升采样'''
-#示例数组，按周一为间隔单位
+# 示例数组，按周一为间隔单位
 df = pd.DataFrame(np.random.randn(2, 3),
                  index=pd.date_range('20170101', periods=2, freq='W-MON'),
                  columns=['S1', 'S2', 'S3'])
 --->                  S1        S2        S3
     2017-01-02 -1.204836  0.538345 -0.933471
     2017-01-09  2.307653 -0.112200  0.942536
+
 
 # 直接升采样会产生空值
 df.resample('D').asfreq()
@@ -2256,7 +2323,8 @@ df.resample('D').asfreq()
     2017-01-08       NaN       NaN       NaN
     2017-01-09  2.307653 -0.112200  0.942536
 
-#ffill用NaN的前一个值填充，bfill用NaN的后一个值填充，可以指定填充个数
+
+# ffill用NaN的前一个值填充，bfill用NaN的后一个值填充，可以指定填充个数
 df.resample('D').ffill(2)
 --->                  S1        S2        S3
     2017-01-02 -1.204836  0.538345 -0.933471
@@ -2268,7 +2336,7 @@ df.resample('D').ffill(2)
     2017-01-08       NaN       NaN       NaN
     2017-01-09  2.307653 -0.112200  0.942536
 
-#采用线性填充
+# 采用线性填充
 df.resample('D').interpolate('linear')
 --->                  S1        S2        S3
     2017-01-02 -1.204836  0.538345 -0.933471
@@ -2280,12 +2348,18 @@ df.resample('D').interpolate('linear')
     2017-01-08  1.805869 -0.019265  0.674535
     2017-01-09  2.307653 -0.112200  0.942536
 ```
-![日期和时间处理](https://upload-images.jianshu.io/upload_images/4353065-567f0b137257697c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
 
-![频率freq的参数设置1](https://upload-images.jianshu.io/upload_images/4353065-f2836c834eda1739.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-![频率freq的参数设置2](https://upload-images.jianshu.io/upload_images/4353065-6923bea0bc9f90cf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![日期和时间处理](日期和时间处理.png)
+
+![频率freq的参数设置1](频率freq的参数设置1.png)
+
+![频率freq的参数设置2](频率freq的参数设置2.png)
+
 ************************
+
+#搞到这里
 ## 14、pandas的IO操作
+
 ```
 #原始数据
    S.No    Name  Age       City  Salary
