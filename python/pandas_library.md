@@ -194,6 +194,28 @@ white  down    0.718607
 dtype: float64
 ```
 
+```python
+# 判断单个值是否存在
+s = pd.Series(range(5))
+print (s==4)
+--->0    False
+    1    False
+    2    False
+    3    False
+    4     True
+    dtype: bool
+
+------------------------------------------
+# 判断多个值是否存在
+s = pd.Series(list('abc'))
+x = s.isin(['a', 'c', 'e'])      # 返回的是系列的bool值
+print (x)
+--->0     True
+    1    False
+    2     True
+    dtype: bool
+```
+
 ************************
 
 ## 4、创建数据帧
@@ -1018,6 +1040,9 @@ df.continent.cat.codes.head()
 3    2
 4    0
 dtype: int8
+------------------------------------------
+# 可以对转化的类进行排序
+df.continent.cat.set_categories(['Africa', 'Asia', 'Europe', 'North America', 'Oceania','South America'],inplace=True)
 ```
 
 ************************
@@ -2556,70 +2581,30 @@ Yes    Fri 15.0 2.714000
 
 ```python
 # 示例数组
-df = pd.DataFrame(data={'Province' : ['ON','QC','BC','AL','AL','MN','ON'],
-                        'City' : ['Toronto','Montreal','Vancouver','Calgary','Edmonton','Winnipeg','Windsor'],
-                        'Sales' : [13,6,16,8,4,3,1]})
---->        City Province  Sales
-    0    Toronto       ON     13
-    1   Montreal       QC      6
-    2  Vancouver       BC     16
-    3    Calgary       AL      8
-    4   Edmonton       AL      4
-    5   Winnipeg       MN      3
-    6    Windsor       ON      1
+    Account    Name    Rep   Manager   Product    Quantity    Price    Status
+0    714466    Trantow-Barrows    Craig Booker    Debra Henley    CPU    1    30000    presented
+1    714466    Trantow-Barrows    Craig Booker    Debra Henley    Software    1    10000    presented
+2    714466    Trantow-Barrows    Craig Booker    Debra Henley    Maintenance    2    5000    pending
+3    737550    Fritsch, Russel and Anderson    Craig Booker Debra Henley CPU 1 35000    declined
+4    146832    Kiehn-Spinka    Daniel Hilton    Debra Henley    CPU    2    65000    won
 
 ------------------------------------------
 # 创建透视表
 table = pd.pivot_table(df,
-                        index=['Province'],
-                        columns=['City'],
-                        values=['City'],
-                        aggfunc=np.size)
---->           Sales
-    City     Calgary Edmonton Montreal Toronto Vancouver Windsor Winnipeg
-    Province
-    AL           1.0      1.0      NaN     NaN       NaN     NaN      NaN
-    BC           NaN      NaN      NaN     NaN       1.0     NaN      NaN
-    MN           NaN      NaN      NaN     NaN       NaN     NaN      1.0
-    ON           NaN      NaN      NaN     1.0       NaN     1.0      NaN
-    QC           NaN      NaN      1.0     NaN       NaN     NaN      NaN
-
+                       index=["Manager","Status"],
+                       columns=["Product"],
+                       values=["Quantity","Price"],
+                       aggfunc={"Quantity":len,"Price":np.sum},
+                       fill_value=0,
+                       margins=True)
+------------------------------------------
+# 查询透视表
+table.query('Status == ["pending","won"]')
 ------------------------------------------
 # 把二维透视表转成一维，同上区别
-table.stack('City')
---->                    Sales
-    Province City
-    AL       Calgary      1.0
-             Edmonton     1.0
-    BC       Vancouver    1.0
-    MN       Winnipeg     1.0
-    ON       Toronto      1.0
-             Windsor      1.0
-    QC       Montreal     1.0
+table.stack('Product')
 ```
+
+![透视表](透视表.png)
 
 ************************
-
-## 18、其他
-
-```python
-# 判断单个值是否存在
-s = pd.Series(range(5))
-print (s==4)
---->0    False
-    1    False
-    2    False
-    3    False
-    4     True
-    dtype: bool
-
-------------------------------------------
-# 判断多个值是否存在
-s = pd.Series(list('abc'))
-x = s.isin(['a', 'c', 'e'])      # 返回的是系列的bool值
-print (x)
---->0     True
-    1    False
-    2     True
-    dtype: bool
-```
