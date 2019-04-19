@@ -37,6 +37,69 @@ s = pd.Series(data,index=[100,101,102,103],name = 'A')      #指定了索引值�
 ```
 
 ```python
+'''从列表创建'''
+s = pd.Series([2, 4, 6, 8, 10])      #使用默认索引值
+--->
+0     2
+1     4
+2     6
+3     8
+4    10
+dtype: int64
+
+------------------------------------------
+
+# 将系列转换回列表
+s.tolist()
+--->[2, 4, 6, 8, 10]
+
+------------------------------------------
+
+# 如果列表内有非实数类型，进行强制转换
+s1 = pd.Series(['100', '200', 'python', '300.12', '400'])
+--->
+0       100
+1       200
+2    python #非实数
+3    300.12
+4       400
+dtype: object
+
+s2 = pd.to_numeric(s1, errors='coerce')
+--->
+0    100.00
+1    200.00
+2       NaN #转换为空值
+3    300.12
+4    400.00
+dtype: float64
+
+------------------------------------------
+
+# 如果列表有多重组合
+s = pd.Series([
+    ['Red', 'Green', 'White'],
+    ['Red', 'Black'],
+    ['Yellow']])
+--->
+0    [Red, Green, White]
+1           [Red, Black]
+2               [Yellow]
+dtype: object
+
+# 转换成系列
+s.apply(pd.Series).stack().reset_index(drop=True)
+--->
+0       Red
+1     Green
+2     White
+3       Red
+4     Black
+5    Yellow
+dtype: object
+```
+
+```python
 '''从字典创建'''
 data = {'a' : 0., 'b' : 1., 'c' : 2.}
 s = pd.Series(data)      #使用字典的键作为索引值
@@ -197,7 +260,7 @@ dtype: float64
 ```python
 # 判断单个值是否存在
 s = pd.Series(range(5))
-print (s==4)
+print(s==4)
 --->0    False
     1    False
     2    False
@@ -209,7 +272,7 @@ print (s==4)
 # 判断多个值是否存在
 s = pd.Series(list('abc'))
 x = s.isin(['a', 'c', 'e'])      # 返回的是系列的bool值
-print (x)
+print(x)
 --->0     True
     1    False
     2     True
@@ -808,6 +871,7 @@ df.duplicated()      # 未附加条件列，默认行所有值都一样才是重
 ------------------------------------------
 # 去除重复值，保留重复的第一行数据，跟排序有关
 df.drop_duplicates()      # 根据上面结果去掉重复的行
+df[~df.duplicated()]      # 结果相同
 --->  data1  data2
     0     a      3
     1     a      2
@@ -1302,6 +1366,22 @@ df.apply(f,axis = 1)      #求每行最大最小值
 3   11    9
 4   14   12
 ------------------------------------------
+# 比较两列的大小
+def f(a, b):
+    if a >= b:
+        return b
+    else:
+        return a
+
+df.apply(lambda x:f(x['col1'],x['col2']),axis=1)
+--->
+0     0
+1     3
+2     6
+3     9
+4    12
+dtype: int64
+------------------------------------------
 # applymap对数组的所有值操作，如下每个值都扩大10倍
 df.applymap(lambda x : x*10)
 --->   col1  col2  col3
@@ -1707,6 +1787,14 @@ df.groupby('Team')['Points'].agg([np.mean,np.sum,np.size])
     Team
     Devils  863.0   863     1
     Riders  832.5  1665     2
+-------------------------------------------
+# 对分组的个数从0开始计数
+df.groupby('Year').cumcount()   #'Year': [2014,2015,2014]
+--->
+0    0  
+1    0
+2    1
+dtype: int64
 ```
 
 ```python
@@ -1756,8 +1844,7 @@ filter = df.groupby('Team').filter(lambda x: len(x) >= 2)      #过滤行数
 ## 12、pandas的连接操作
 
 ```python
-'''两个数组的左右合并-merge函数'''
-
+'''根据索引的简单合并 - join函数'''
 #示例数组1
 left = pd.DataFrame({
          'id':[1,2,3,4,5],
@@ -1783,6 +1870,19 @@ right = pd.DataFrame(
     4  Betty   5       sub5
 
 -------------------------------------------
+# 根据索引进行快速合并
+left.join(right, lsuffix='_left', rsuffix='right')
+--->
+  id_left   Name_left   subject_id_left   idright   Nameright   subject_idright
+0   1       Alex        sub1              1          Billy      sub2
+1   2       Amy         sub2              2          Brian      sub4
+2   3       Allen       sub4              3          Bran       sub3
+3   4       Alice       sub6              4          Bryce      sub6
+4   5       Ayoung      sub5              5          Betty      sub5
+```
+
+```python
+'''两个数组的左右合并-merge函数'''
 # 根据1个或多个条件列合并
 rs = pd.merge(left,right,on=['id','subject_id'])      # 合并条件=id&subject_id
 --->   Name_x  id subject_id Name_y
@@ -2117,6 +2217,25 @@ dates = pd.date_range(start, end)
                    '2017-11-03',
                    '2017-11-04',
                    '2017-11-05'],dtype='datetime64[ns]', freq='D')
+------------------------------------------
+# 为每个元素创建日期序列
+# 起止日期
+t = pd.date_range(start='20180301', end='20180303', freq='D')
+# 包含的元素
+s = pd.Series([1,2])
+
+# 先创建一个二级索引
+index = pd.MultiIndex.from_product([t,s], names = ['t','value'])
+# 然后创建数据帧
+df = pd.DataFrame(index=index).reset_index()
+--->
+    t       value
+0 2018-03-01 1
+1 2018-03-01 2
+2 2018-03-02 1
+3 2018-03-02 2
+4 2018-03-03 1
+5 2018-03-03 2
 ```
 
 ```python
@@ -2232,6 +2351,10 @@ grouped = ts.groupby(level=0)      # level=0
 timediff = pd.Timedelta(6,unit='s')      # unit可以是'd','h','m','s'
 timediff = pd.Timedelta(seconds = 6)      # 写法2
 --->0 days 00:00:06
+
+# 创建昨天
+pd.to_datetime('today') - pd.Timedelta(1,unit = 'd')
+--->Timestamp('2019-04-18 15:26:19.352203')
 
 # 时间差的加减
 s = pd.Series(pd.date_range('2012-1-1', periods=3, freq='D'))
