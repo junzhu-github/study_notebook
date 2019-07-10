@@ -6,3 +6,5 @@ notes of study
 - mysql
 
 ...
+
+![what is dream about.](pic/dream.jpg)
