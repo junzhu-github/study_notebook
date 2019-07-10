@@ -2540,7 +2540,7 @@ df = pd.DataFrame({'date': pd.date_range('2015-01-01', freq='W',periods=5),
                    names=['v','d']))
 
 --->              a       date
-    v d                       
+    v d
     1 2015-01-04  0 2015-01-04
     2 2015-01-11  1 2015-01-11
     3 2015-01-18  2 2015-01-18
@@ -2551,7 +2551,7 @@ df = pd.DataFrame({'date': pd.date_range('2015-01-01', freq='W',periods=5),
 # 按date列的日期以<月>为单位求a列的和
 df.resample('M', on='date').sum()
 --->            a
-    date         
+    date
     2015-01-31  6
     2015-02-28  4
 
@@ -2559,7 +2559,7 @@ df.resample('M', on='date').sum()
 # ！同上区别
 df.resample('M', level='d').sum()
 --->            a
-    d            
+    d
     2015-01-31  6
     2015-02-28  4
 ------------------------------------------
@@ -2575,7 +2575,7 @@ df = pd.DataFrame({'a': [1]*100},
 
 # 按5天采样，并计算5天中的开盘、收盘、最高、最低值
 df.resample('5D').ohlc()
---->              a               
+--->              a
                open high low close
     2018-01-01    1    1   1     1
     2018-01-06    1    1   1     1
@@ -2858,5 +2858,3 @@ table.stack('Product')
 ```
 
 ![透视表](透视表.png)
-
-************************
