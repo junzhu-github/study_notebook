@@ -1,7 +1,7 @@
 <!--
  * @Date: 2019-10-24 11:12:53
  * @Author: YING
- * @LastEditTime: 2019-10-24 16:31:29
+ * @LastEditTime : 2020-02-05 16:50:46
  -->
 
 # MYSQL学习记录
@@ -54,6 +54,25 @@ CREATE TABLE IF NOT EXISTS scores(
     course VARCHAR(50) NOT NULL,   -- 课程
     score TINYINT UNSIGNED   -- 分数
 );
+```
+
+```mysql
+# 复制表格结构体
+CREATE DATABASE [IF NOT EXISTS] db_name LIKE db;
+
+# 示例
+CREATE TABLE IF NOT EXISTS copy_students(
+LIKE students;
+
+-----------------------------------------------
+
+# 复制表格结构体 + 数据
+CREATE DATABASE [IF NOT EXISTS] db_name 
+AS SELECT * FROM db;
+
+# 示例
+CREATE TABLE IF NOT EXISTS copy_students(
+AS SELECT * FROM students;
 ```
 
 ![数据类型表](数据类型表.png)
@@ -158,7 +177,7 @@ MODIFY new_col1 tinyint(3);
 ------------------------------------------------------------------------------------
 # 删除列
 ALTER TABLE tb_name
-DROP col_name,DROP col_name,......;
+DROP col_name,DROP col_name,... ;
 
 # 示例
 ALTER TABLE students
@@ -175,6 +194,17 @@ DROP col2;
 | gender    | enum('0','1')         | YES   |      | 0        |                 |
 | class     | int(10) unsigned      | YES   |      |          |                 |
 +───────────+───────────────────────+───────+──────+──────────+─────────────────+
+
+------------------------------------------------------------------------------------
+# 删除主键
+ALTER TABLE tb_name Drop PRIMARY KEY;
+
+# 增加主键
+ALTER TABLE tb_name ADD PRIMARY KEY(id);
+
+------------------------------------------------------------------------------------
+# 增加索引
+ALTER TABLE tb_name ADD INDEX indx_name (col_name) ;
 ```
 
 ### 删除表格
@@ -185,4 +215,346 @@ DROP TABLE tb_name;
 
 ## 数据操作
 
+### 添加数据
 
+```mysql
+# 添加数据
+INSERT INTO TABLE tb_name VALUES (),(),();
+
+# 示例
+INSERT INTO  students VALUES (DEFAULT,1,"jack",10,'0',1),(DEFAULT,2,"emily",10,'1',2);
+--->
++─────+─────────+───────────+──────+─────────+────────+
+| id  | userid  | username  | age  | gender  | class  |
++─────+─────────+───────────+──────+─────────+────────+
+| 1   | 1       | jack      | 10   | 0       | 1      |
+| 2   | 2       | emily     | 10   | 1       | 2      |
++─────+─────────+───────────+──────+─────────+────────+
+
+1.对于自动编号的字段，插入“NULL”或“DEFAULT”系统将自动依次递增编号；
+2.对于有默认约束的字段，可以插入“DEFAULT”表示使用默认值；
+3.列值可传入数值、表达式或函数，如密码可以用md5()函数进行加密（如md5('123')）；
+4.可同时插入多条记录，多条记录括号间用逗号“,”隔开
+```
+
+```mysql
+# 在特定列插入数据
+INSERT INTO TABLE tb_name (col_name) VALUES (),(),();
+
+-------------------------------------------------------
+# 从其他表格复制数据
+INSERT INTO TABLE tb_name (col_name)
+SELECT * FROM other_tb_name WHERE ... ;
+```
+
+### 删除数据
+
+```mysql
+DELETE FROM tb_name WHERE col_name='exist_value';
+
+# 示例
+DELETE FROM students WHERE userid = 2;
+--->
++─────+─────────+───────────+──────+─────────+────────+
+| id  | userid  | username  | age  | gender  | class  |
++─────+─────────+───────────+──────+─────────+────────+
+| 1   | 1       | jack      | 10   | 0       | 1      |
++─────+─────────+───────────+──────+─────────+────────+
+1.不添加WHERE则删除全部记录
+2.删除单条记录后再插入，插入的记录中id编号将从最大值往上加，而不是填补删除的。
+
+# 示例
+INSERT INTO  students VALUES (DEFAULT,1,"tom",11,'0',3);
+--->
++─────+─────────+───────────+──────+─────────+────────+
+| id  | userid  | username  | age  | gender  | class  |
++─────+─────────+───────────+──────+─────────+────────+
+| 1   | 1       | jack      | 10   | 0       | 1      |
+| 3   | 1       | tom       | 11   | 0       | 3      |
++─────+─────────+───────────+──────+─────────+────────+
+```
+
+### 修改数据
+
+```mysql
+# 修改列所有数据
+UPDATE tb_name SET col_name='new_value'
+
+# 示例
+UPDATE students SET age = 11;   # 谨慎使用
+--->
++─────+─────────+───────────+──────+─────────+────────+
+| id  | userid  | username  | age  | gender  | class  |
++─────+─────────+───────────+──────+─────────+────────+
+| 1   | 1       | jack      | 11   | 0       | 1      |
+| 3   | 1       | tom       | 11   | 0       | 3      |
++─────+─────────+───────────+──────+─────────+────────+
+
+---------------------------------------------------------------
+# 修改列特定行的数据
+UPDATE tb_name SET col1_name='new1_value',col2_name='new2_value'
+WHERE col_name='exist_value';
+
+# 示例
+UPDATE students SET age = 9,userid = 22
+WHERE id = 3;
+--->
++─────+─────────+───────────+──────+─────────+────────+
+| id  | userid  | username  | age  | gender  | class  |
++─────+─────────+───────────+──────+─────────+────────+
+| 1   | 1       | jack      | 11   | 0       | 1      |
+| 3   | 22      | tom       | 9    | 0       | 3      |
++─────+─────────+───────────+──────+─────────+────────+
+```
+
+### 查询数据
+
+```mysql
+# 标准语法
+SELECT DISTINCT col_name FROM tb_name
+WHERE ...
+GROUP BY ... HAVING ...
+ORDER BY ... ASC/DESC
+LIMIT ... OFFSET ... ;
+```
+
+```mysql
+# 示例数据：mysql自带表city
++─────+─────────────────+──────────────+────────────────+─────────────+
+| ID  | Name            | CountryCode  | District       | Population  |
++─────+─────────────────+──────────────+────────────────+─────────────+
+| 1   | Kabul           | AFG          | Kabol          | 1780000     |
+| 2   | Qandahar        | AFG          | Qandahar       | 237500      |
+| 3   | Herat           | AFG          | Herat          | 186800      |
+| 4   | Mazar-e-Sharif  | AFG          | Balkh          | 127800      |
+| 5   | Amsterdam       | NLD          | Noord-Holland  | 731200      |
+| 6   | Rotterdam       | NLD          | Zuid-Holland   | 593321      |
+| 7   | Haag            | NLD          | Zuid-Holland   | 440900      |
+| 8   | Utrecht         | NLD          | Utrecht        | 234323      |
+| 9   | Eindhoven       | NLD          | Noord-Brabant  | 201843      |
+| 10  | Tilburg         | NLD          | Noord-Brabant  | 193238      |
+```
+
+```mysql
+# LIMIT用法
+SELECT * FROM city LIMIT 2,3;   #从第三行开始取数据，连取3行
+等同于
+SELECT * FROM city LIMIT 3 OFFSET 2;
+--->
++─────+─────────────────+──────────────+────────────────+─────────────+
+| ID  | Name            | CountryCode  | District       | Population  |
++─────+─────────────────+──────────────+────────────────+─────────────+
+| 3   | Herat           | AFG          | Herat          | 186800      |
+| 4   | Mazar-e-Sharif  | AFG          | Balkh          | 127800      |
+| 5   | Amsterdam       | NLD          | Noord-Holland  | 731200      |
++─────+─────────────────+──────────────+────────────────+─────────────+
+```
+
+```mysql
+# GROUP BY / HAVING 用法
+SELECT 
+    Population, COUNT(*)
+FROM
+    city
+GROUP BY Population
+HAVING COUNT(*) > 1
+ORDER BY COUNT(*) DESC;
+--->
++─────────────+───────────+
+| Population  | count(*)  |
++─────────────+───────────+
+| 90000       | 12        |
+| 101000      | 6         |
+| 130000      | 4         |
+| 112000      | 4         |
+| 106000      | 4         |
++─────────────+───────────+
+```
+
+```mysql
+# concat用法
+SELECT concat(CountryCode,'-',Name) FROM city;
+--->
++───────────────────────────────+
+| concat(CountryCode,'-',Name)  |
++───────────────────────────────+
+| AFG-Kabul                     |
+| AFG-Qandahar                  |
+| AFG-Herat                     |
++───────────────────────────────+
+```
+
+```mysql
+# Like用法
+SELECT * FROM city WHERE District LIKE "%java%"
+--->
++─────+───────────+──────────────+───────────+─────────────+
+| ID  | Name      | CountryCode  | District  | Population  |
++─────+───────────+──────────────+───────────+─────────────+
+| 940 | Surabaya  | IDN          | East Java | 2663820     |
+| 941 | Bandung   | IDN          | West Java | 2429000     |
+| 944 | Tangerang | IDN          | West Java | 1198300     |
++─────+───────────+──────────────+───────────+─────────────+
+1.[NOT]LIKE  模糊匹配
+2.(%)：代表任意个字符，0个或多个
+3.(_)：代表任意一个字符，只有一个
+```
+
+```mysql
+# COALESCE用法：返回列表中第一个非空值
+SELECT COALESCE(NULL, NULL, NULL, 'W3Schools.com', NULL, 'Example.com');
+--->
++───────────────────────────────────────────────────────────────────+
+| COALESCE(NULL, NULL, NULL, 'W3Schools.com', NULL, 'Example.com')  |
++───────────────────────────────────────────────────────────────────+
+| W3Schools.com                                                     |
++───────────────────────────────────────────────────────────────────+
+```
+
+```mysql
+# CASE ... WHEN ... ELSE ... END 用法
+SELECT Name,Population,
+    (CASE
+    WHEN (Population < 100000) THEN 'small'
+    WHEN (Population BETWEEN 100000 AND 1000000) THEN 'middle'
+    WHEN (Population BETWEEN 1000000 AND 5000000) THEN 'big'
+    ELSE 'super' END ) AS x
+FROM city;
+--->
++─────────────────────────────────+─────────────+────────+
+| Name                            | Population  | x      |
++─────────────────────────────────+─────────────+────────+
+| SÃ£o Paulo                      | 9968485     | super  |
+| Jakarta                         | 9604900     | super  |
+| London                          | 7285000     | super  |
+| Fortaleza                       | 2097757     | big    |
+| Guayaquil                       | 2070040     | big    |
+| Slough                          | 112000      | middle |
+| Sohumi                          | 111700      | middle |
+| The Valley                      | 595         | small  |
++─────────────────────────────────+─────────────+────────+
+1.BETWEEN ... AND ... 包含边界
+```
+
+```mysql
+# IN用法
+SELECT Name,District,District IN ('Qandahar','Zuid-Holland') FROM city;
+--->
++─────────────────+────────────────+──────────────────────────────────────────+
+| Name            | District       | District IN ('Qandahar','Zuid-Holland')  |
++─────────────────+────────────────+──────────────────────────────────────────+
+| Kabul           | Kabol          | 0                                        |
+| Qandahar        | Qandahar       | 1                                        |
+| Herat           | Herat          | 0                                        |
+| Mazar-e-Sharif  | Balkh          | 0                                        |
+| Amsterdam       | Noord-Holland  | 0                                        |
+| Rotterdam       | Zuid-Holland   | 1                                        |
+| Haag            | Zuid-Holland   | 1                                        |
++─────────────────+────────────────+──────────────────────────────────────────+
+```
+
+```mysql
+# SOME/ANY/ALL用法
+>>> 该国家所有城市人口都超过100万的国家有哪些？
+SELECT Name,CountryCode,Population FROM city x
+WHERE 100000 >= ANY (SELECT Population FROM city y WHERE x.CountryCode = y.CountryCode);
+--->
++──────────────────────────+──────────────+─────────────+
+| Name                     | CountryCode  | Population  |
++──────────────────────────+──────────────+─────────────+
+| Conakry                  | GIN          | 1090610     |
+| Kowloon and New Kowloon  | HKG          | 1987996     |
+| Victoria                 | HKG          | 1312637     |
+| Singapore                | SGP          | 4017733     |
+| Montevideo               | URY          | 1236000     |
++──────────────────────────+──────────────+─────────────+
+```
+
+![anysomeall](anysomeall.png)
+
+```mysql
+# IFNULL用法：如果表达式为空则返回特定值
+>>> 返回人口第二高的城市
+SELECT IFNULL(
+    (SELECT Population FROM city ORDER BY Population DESC LIMIT 1 OFFSET 1),NULL) AS SecondHighest
+--->
++────────────────+
+| SecondHighest  |
++────────────────+
+| 9981619        |
++────────────────+
+```
+
+
+
+
+
+
+```mysql
+
+```
+
+
+#### 连接查询
+
+![数据连接表](数据连接表.png)
+
+```mysql
+# 表与常数连接
+SELECT * FROM city,(SELECT 1) AS n;
+--->
++─────+─────────────────+──────────────+────────────────+─────────────+────+
+| ID  | Name            | CountryCode  | District       | Population  | n  |
++─────+─────────────────+──────────────+────────────────+─────────────+────+
+| 1   | Kabul           | AFG          | Kabol          | 1780000     | 1  |
+| 2   | Qandahar        | AFG          | Qandahar       | 237500      | 1  |
+| 3   | Herat           | AFG          | Herat          | 186800      | 1  |
+| 4   | Mazar-e-Sharif  | AFG          | Balkh          | 127800      | 1  |
+| 5   | Amsterdam       | NLD          | Noord-Holland  | 731200      | 1  |
++─────+─────────────────+──────────────+────────────────+─────────────+────+
+```
+
+#### 时间查询
+
+```mysql
+# 查询时间差
+
+# TIMESTAMPDIFF()语法：返回给定的单位时间距离
+TIMESTAMPDIFF(unit,date_time_1,date_time_2);
+#unit:SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, or YEAR
+
+# 示例
+SELECT TIMESTAMPDIFF(MONTH,'2009-05-18','2009-07-29');
+--->
++───────────────────────────────────────────────────+
+| # TIMESTAMPDIFF(MONTH,'2009-05-18','2009-07-29')  |
++───────────────────────────────────────────────────+
+| 2                                                 |
++───────────────────────────────────────────────────+
+
+----------------------------------------------------------------
+# DATEDIFF()语法：返回日期差
+DATEDIFF(date_time_1,date_time_2);
+
+# 示例
+SELECT DATEDIFF('2008-05-17 11:31:31','2008-04-28');
+--->
++───────────────────────────────────────────────+
+| DATEDIFF('2008-05-17 11:31:31','2008-04-28')  |
++───────────────────────────────────────────────+
+| 19                                            |
++───────────────────────────────────────────────+
+
+----------------------------------------------------------------
+# TIMEDIFF()语法：返回日期差
+TIMEDIFF(date_time_1,date_time_2);
+
+# 示例
+SELECT TIMEDIFF('2009-05-18 15:45:57.005678','2009-05-18 13:40:50.005670');
+--->
++──────────────────────────────────────────────────────────────────────+
+| TIMEDIFF('2009-05-18 15:45:57.005678','2009-05-18 13:40:50.005670')  |
++──────────────────────────────────────────────────────────────────────+
+| 02:05:07.000008                                                      |
++──────────────────────────────────────────────────────────────────────+
+```
