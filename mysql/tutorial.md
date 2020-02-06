@@ -1,7 +1,7 @@
 <!--
  * @Date: 2019-10-24 11:12:53
  * @Author: YING
- * @LastEditTime : 2020-02-05 16:50:46
+ * @LastEditTime : 2020-02-05 17:51:52
  -->
 
 # MYSQL学习记录
@@ -372,6 +372,7 @@ ORDER BY COUNT(*) DESC;
 ```
 
 ```mysql
+# 字符连接
 # concat用法
 SELECT concat(CountryCode,'-',Name) FROM city;
 --->
@@ -382,6 +383,36 @@ SELECT concat(CountryCode,'-',Name) FROM city;
 | AFG-Qandahar                  |
 | AFG-Herat                     |
 +───────────────────────────────+
+
+-------------------------------------------------
+# 组内字符连接
+# GROUP_CONCAT()
+SELECT CountryCode, GROUP_CONCAT(District) FROM city
+GROUP BY CountryCode;
+--->
++──────────────+───────────────────────────────────────────────────────────────────────+
+| CountryCode  | group_concat(District)                                                |
++──────────────+───────────────────────────────────────────────────────────────────────+
+| ABW          | Â–                                                                    |
+| AFG          | Kabol,Qandahar,Herat,Balkh                                            |
+| AGO          | Luanda,Huambo,Benguela,Benguela,Namibe                                |
+| AIA          | Â–,Â–                                                                 |
+| ALB          | Tirana                                                                |
++──────────────+───────────────────────────────────────────────────────────────────────+
+
+# 组内字符连接，去掉重复值
+SELECT CountryCode, GROUP_CONCAT(DISTINCT District) FROM city
+GROUP BY CountryCode;
+--->
++──────────────+────────────────────────────────────────────────────────────────+
+| CountryCode  | group_concat(DISTINCT District)                                |
++──────────────+────────────────────────────────────────────────────────────────+
+| ABW          | Â–                                                             |
+| AFG          | Balkh,Herat,Kabol,Qandahar                                     |
+| AGO          | Benguela,Huambo,Luanda,Namibe                                  |
+| AIA          | Â–                                                             |
+| ALB          | Tirana                                                         |
++──────────────+────────────────────────────────────────────────────────────────+
 ```
 
 ```mysql
@@ -557,4 +588,166 @@ SELECT TIMEDIFF('2009-05-18 15:45:57.005678','2009-05-18 13:40:50.005670');
 +──────────────────────────────────────────────────────────────────────+
 | 02:05:07.000008                                                      |
 +──────────────────────────────────────────────────────────────────────+
+```
+
+```mysql
+# 查询当前日期
+SELECT CURDATE();
+--->
++--------------+
+| CURRENT_DATE |
++--------------+
+| 2015-04-13   |
++--------------+
+
+# 查询当前时间
+SELECT CURTIME();
+--->
++--------------+
+| CURRENT_TIME |
++--------------+
+| 11:35:45     |
++--------------+
+
+# 查询当前日期 + 时间
+SELECT CURRENT_TIMESTAMP; / SELECT NOW();
++---------------------+
+| CURRENT_TIMESTAMP   |
++---------------------+
+| 2015-04-13 11:42:41 |
++---------------------+
+```
+
+```mysql
+# 提取日期：DATE()
+SELECT DATE('2008-05-17 11:31:31')
+--->
++---------------+
+| required_DATE |
++---------------+
+| 2008-05-17    |
++---------------+
+
+# 提取年份：YEAR()
+SELECT YEAR('2009-05-19');
+--->
++--------------------+
+| YEAR('2009-05-19') |
++--------------------+
+|               2009 |
++--------------------+
+
+# 提取月份：MONTH()
+SELECT MONTH('2009-05-18');
+--->
++---------------------+
+| MONTH('2009-05-18') |
++---------------------+
+|                   5 |
++---------------------+
+
+# 提取日期：DAY()
+SELECT DAY('2008-05-15');
+--->
++-------------------+
+| DAY('2008-05-15') |
++-------------------+
+|                15 |
++-------------------+
+```
+
+```mysql
+# 日期/时间 加减
+
+# 单次只能加减日期或时间
+# TIMESTAMPADD()
+TIMESTAMPADD(unit,interval,datetime_expr);
+#unit:SECOND, MINUTE, HOUR, DAY, WEEK, MONTH, QUARTER, or YEAR
+
+# 示例
+SELECT TIMESTAMPADD(MONTH,2,'2009-05-18');
+--->
++------------------------------------+
+| TIMESTAMPADD(MONTH,2,'2009-05-18') |
++------------------------------------+
+| 2009-07-18                         |
++------------------------------------+
+
+# 同时可以加减日期和时间
+# ADDTIME(expr1,expr2)
+
+# 示例
+SELECT ADDTIME('2008-05-15 13:20:32.50','2 1:39:27.50');
+--->
++----------------------------+
+| required_datetime          |
++----------------------------+
+| 2008-05-17 15:00:00.000000 |
++----------------------------+
+
+# 只能加减日期
+# ADDDATE(date, INTERVAL expr unit) / ADDDATE(expr,days)
+
+# 示例
+SELECT ADDDATE('2008-05-15', INTERVAL 10 DAY);
+--->
++---------------+
+| required_date |
++---------------+
+| 2008-05-25    |
++---------------+
+```
+
+```mysql
+# 日期格式
+# DATE_FORMAT(date,format)
+
+# 示例
+SELECT DATE_FORMAT('2008-05-15 22:23:00', '%W %D %M %Y');
+--->
++---------------------------------------------------+
+| DATE_FORMAT('2008-05-15 22:23:00', '%W %D %M %Y') |
++---------------------------------------------------+
+| Thursday 15th May 2008                            |
++---------------------------------------------------+
+
+# 格式表
++───────+──────────────────────────────────────────────────────────────────────────────────────────────────+
+| Name  | Description                                                                                      |
++───────+──────────────────────────────────────────────────────────────────────────────────────────────────+
+| %a    | Abbreviated weekday name (Sun..Sat)                                                              |
+| %b    | Abbreviated month name (Jan..Dec)                                                                |
+| %ac   | Month, numeric (0..12)                                                                           |
+| %D    | Day of the month with English suffix (0th, 1st, 2nd, 3rd, …)                                     |
+| %d    | Day of the month, numeric (00..31)                                                               |
+| %e    | Day of the month, numeric (0..31)                                                                |
+| %f    | Microseconds (000000..999999)                                                                    |
+| %H    | Hour (00..23)                                                                                    |
+| %h    | Hour (01..12)                                                                                    |
+| %I    | Hour (01..12)                                                                                    |
+| %i    | Minutes, numeric (00..59)                                                                        |
+| %j    | Day of year (001..366)                                                                           |
+| %k    | Hour (0..23)                                                                                     |
+| %l    | Hour (1..12)                                                                                     |
+| %M    | Month name (January..December)                                                                   |
+| %m    | Month, numeric (00..12)                                                                          |
+| %p    | AM or PM                                                                                         |
+| %r    | Time, 12-hour (hh:mm:ss followed by AM or PM)                                                    |
+| %S    | Seconds (00..59)                                                                                 |
+| %s    | Seconds (00..59)                                                                                 |
+| %T    | Time, 24-hour (hh:mm:ss)                                                                         |
+| %U    | Week (00..53), where Sunday is the first day of the week                                         |
+| %u    | Week (00..53), where Monday is the first day of the week                                         |
+| %V    | Week (01..53), where Sunday is the first day of the week; used with %X                           |
+| %v    | Week (01..53), where Monday is the first day of the week; used with %x                           |
+| %W    | Weekday name (Sunday..Saturday)                                                                  |
+| %w    | Day of the week (0=Sunday..6=Saturday)                                                           |
+| %X    | Year for the week where Sunday is the first day of the week, numeric, four digits; used with %V  |
+| %x    | Year for the week, where Monday is the first day of the week, numeric, four digits; used with %v |
+| %Y    | Year, numeric, four digits                                                                       |
+| %y    | Year, numeric (two digits)                                                                       |
+| %%    | A literal “%” character                                                                          |
+| %x    | x, for any “x” not listed above                                                                  |
++───────+──────────────────────────────────────────────────────────────────────────────────────────────────+
+
 ```
