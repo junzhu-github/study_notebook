@@ -1,7 +1,7 @@
 <!--
  * @Date: 2019-10-24 11:12:53
  * @Author: YING
- * @LastEditTime : 2020-02-05 17:51:52
+ * @LastEditTime : 2020-02-06 20:04:59
  -->
 
 # MYSQL学习记录
@@ -352,7 +352,7 @@ SELECT * FROM city LIMIT 3 OFFSET 2;
 
 ```mysql
 # GROUP BY / HAVING 用法
-SELECT 
+SELECT
     Population, COUNT(*)
 FROM
     city
@@ -372,50 +372,6 @@ ORDER BY COUNT(*) DESC;
 ```
 
 ```mysql
-# 字符连接
-# concat用法
-SELECT concat(CountryCode,'-',Name) FROM city;
---->
-+───────────────────────────────+
-| concat(CountryCode,'-',Name)  |
-+───────────────────────────────+
-| AFG-Kabul                     |
-| AFG-Qandahar                  |
-| AFG-Herat                     |
-+───────────────────────────────+
-
--------------------------------------------------
-# 组内字符连接
-# GROUP_CONCAT()
-SELECT CountryCode, GROUP_CONCAT(District) FROM city
-GROUP BY CountryCode;
---->
-+──────────────+───────────────────────────────────────────────────────────────────────+
-| CountryCode  | group_concat(District)                                                |
-+──────────────+───────────────────────────────────────────────────────────────────────+
-| ABW          | Â–                                                                    |
-| AFG          | Kabol,Qandahar,Herat,Balkh                                            |
-| AGO          | Luanda,Huambo,Benguela,Benguela,Namibe                                |
-| AIA          | Â–,Â–                                                                 |
-| ALB          | Tirana                                                                |
-+──────────────+───────────────────────────────────────────────────────────────────────+
-
-# 组内字符连接，去掉重复值
-SELECT CountryCode, GROUP_CONCAT(DISTINCT District) FROM city
-GROUP BY CountryCode;
---->
-+──────────────+────────────────────────────────────────────────────────────────+
-| CountryCode  | group_concat(DISTINCT District)                                |
-+──────────────+────────────────────────────────────────────────────────────────+
-| ABW          | Â–                                                             |
-| AFG          | Balkh,Herat,Kabol,Qandahar                                     |
-| AGO          | Benguela,Huambo,Luanda,Namibe                                  |
-| AIA          | Â–                                                             |
-| ALB          | Tirana                                                         |
-+──────────────+────────────────────────────────────────────────────────────────+
-```
-
-```mysql
 # Like用法
 SELECT * FROM city WHERE District LIKE "%java%"
 --->
@@ -429,6 +385,9 @@ SELECT * FROM city WHERE District LIKE "%java%"
 1.[NOT]LIKE  模糊匹配
 2.(%)：代表任意个字符，0个或多个
 3.(_)：代表任意一个字符，只有一个
+
+
+
 ```
 
 ```mysql
@@ -516,16 +475,6 @@ SELECT IFNULL(
 +────────────────+
 ```
 
-
-
-
-
-
-```mysql
-
-```
-
-
 #### 连接查询
 
 ![数据连接表](数据连接表.png)
@@ -577,7 +526,7 @@ SELECT DATEDIFF('2008-05-17 11:31:31','2008-04-28');
 +───────────────────────────────────────────────+
 
 ----------------------------------------------------------------
-# TIMEDIFF()语法：返回日期差
+# TIMEDIFF()语法：返回时间差
 TIMEDIFF(date_time_1,date_time_2);
 
 # 示例
@@ -749,5 +698,373 @@ SELECT DATE_FORMAT('2008-05-15 22:23:00', '%W %D %M %Y');
 | %%    | A literal “%” character                                                                          |
 | %x    | x, for any “x” not listed above                                                                  |
 +───────+──────────────────────────────────────────────────────────────────────────────────────────────────+
+
+```
+
+#### 字符查询
+
+```mysql
+# 查找特定字符第一次出现的位置
+SELECT INSTR("W3Schools.com", "o") AS MatchPosition;
+--->
++────────────────+
+| MatchPosition  |
++────────────────+
+| 6              |
++────────────────+
+```
+
+```mysql
+# 字符连接
+# concat用法
+SELECT concat(CountryCode,'-',Name) FROM city;
+--->
++───────────────────────────────+
+| concat(CountryCode,'-',Name)  |
++───────────────────────────────+
+| AFG-Kabul                     |
+| AFG-Qandahar                  |
+| AFG-Herat                     |
++───────────────────────────────+
+
+-------------------------------------------------
+# 组内字符连接
+# GROUP_CONCAT()
+SELECT CountryCode, GROUP_CONCAT(District) FROM city
+GROUP BY CountryCode;
+--->
++──────────────+───────────────────────────────────────────────────────────────────────+
+| CountryCode  | group_concat(District)                                                |
++──────────────+───────────────────────────────────────────────────────────────────────+
+| ABW          | Â–                                                                    |
+| AFG          | Kabol,Qandahar,Herat,Balkh                                            |
+| AGO          | Luanda,Huambo,Benguela,Benguela,Namibe                                |
+| AIA          | Â–,Â–                                                                 |
+| ALB          | Tirana                                                                |
++──────────────+───────────────────────────────────────────────────────────────────────+
+
+# 组内字符连接，去掉重复值
+SELECT CountryCode, GROUP_CONCAT(DISTINCT District) FROM city
+GROUP BY CountryCode;
+--->
++──────────────+────────────────────────────────────────────────────────────────+
+| CountryCode  | group_concat(DISTINCT District)                                |
++──────────────+────────────────────────────────────────────────────────────────+
+| ABW          | Â–                                                             |
+| AFG          | Balkh,Herat,Kabol,Qandahar                                     |
+| AGO          | Benguela,Huambo,Luanda,Namibe                                  |
+| AIA          | Â–                                                             |
+| ALB          | Tirana                                                         |
++──────────────+────────────────────────────────────────────────────────────────+
+```
+
+```mysql
+# 从指定位置提取n个字符
+SELECT SUBSTR("SQL Tutorial", 5, 3) AS ExtractString;
+--->
++────────────────+
+| ExtractString  |
++────────────────+
+| Tut            |
++────────────────+
+
+---------------------------------------------------------------------
+# 从左侧开始提取n个字符
+SELECT LEFT("SQL Tutorial", 5) AS ExtractString;
+--->
++────────────────+
+| ExtractString  |
++────────────────+
+| SQL T          |
++────────────────+
+```
+
+```mysql
+# 重复n遍字符
+SELECT REPEAT("SQL Tutorial", 3);
+--->
++───────────────────────────────────────+
+| REPEAT("SQL Tutorial", 3)             |
++───────────────────────────────────────+
+| SQL TutorialSQL TutorialSQL Tutorial  |
++───────────────────────────────────────+
+```
+
+#### 函数查询
+
+```mysql
+# 四舍五入
+# 向上取整
+SELECT CEILING(25.75);
+--->
++─────────────────+
+| CEILING(25.75)  |
++─────────────────+
+| 26              |
++─────────────────+
+
+--------------------------------------------------------
+# 向下取整
+SELECT FLOOR(25.75);
+--->
++───────────────+
+| FLOOR(25.75)  |
++───────────────+
+| 25            |
++───────────────+
+
+--------------------------------------------------------
+# 四舍五入取数
+SELECT ROUND(125.75,1); --->125.8
+SELECT ROUND(125.75,0); --->126
+SELECT ROUND(125.75,-1); --->130
+
+--------------------------------------------------------
+# 截断数字
+SELECT TRUNCATE(125.75, 1); --->125.7
+SELECT TRUNCATE(125.75, 0); --->125
+SELECT TRUNCATE(125.75, -1); --->120
+```
+
+```mysql
+# 除数 / 余数
+SELECT 10 / 3; --->3.3333
+SELECT 10 DIV 3; --->3
+SELECT 10 % 3; --->1
+```
+
+#### 窗口函数
+
+```mysql
+# 示例数据：表orders
++──────────+─────────────+────────────+───────────+
+| OrderID  | CustomerID  | OrderDate  | Quantity  |
++──────────+─────────────+────────────+───────────+
+| 10308    | 2           | 1996-09-18 | 1         |
+| 10309    | 2           | 1996-09-20 | 5         |
+| 10383    | 4           | 1996-10-16 | 15        |
+| 10383    | 4           | 1996-11-11 | 20        |
+| 10383    | 4           | 1996-11-16 | 20        |
+| 10355    | 4           | 1996-12-10 | 25        |
+| 10355    | 4           | 1996-12-22 | 35        |
++──────────+─────────────+────────────+───────────+
+```
+
+```mysql
+# 序号函数：row_number() / rank() / dense_rank()
+
+>>> 相同CustomerID下按Quantity从大到小排列
+SELECT * FROM
+(SELECT CustomerID,
+    ROW_NUMBER() OVER(PARTITION BY CustomerID ORDER BY Quantity DESC) AS rownum,
+    RANK() OVER(PARTITION BY CustomerID ORDER BY Quantity DESC) AS rnk,
+    DENSE_RANK() OVER(PARTITION BY CustomerID ORDER BY Quantity DESC) AS des,
+    Quantity FROM orders
+) AS t;
+--->
++─────────────+─────────+──────+──────+───────────+
+| CustomerID  | rownum  | rnk  | des  | Quantity  |
++─────────────+─────────+──────+──────+───────────+
+| 2           | 1       | 1    | 1    | 5         |
+| 2           | 2       | 2    | 2    | 1         |
+| 4           | 1       | 1    | 1    | 35        |
+| 4           | 2       | 2    | 2    | 25        |
+| 4           | 3       | 3    | 3    | 20        |
+| 4           | 4       | 3    | 3    | 20        |
+| 4           | 5       | 5    | 4    | 15        |
++─────────────+─────────+──────+──────+───────────+
+1.遇到相同值，row_number()的序号只会递增，rank()的序号会产生间隙，dense_rank()序号则不会
+```
+
+```mysql
+# 分布函数：percent_rank()/cume_dist()
+
+>>> 计算订单量位置百分比
+SELECT t.CustomerID,t.rnk,p.Customer_Num,t.pct,t.cum,t.Quantity FROM
+(SELECT
+    RANK() OVER(PARTITION BY CustomerID ORDER BY Quantity DESC) AS rnk,
+    PERCENT_RANK() OVER(PARTITION BY CustomerID ORDER BY Quantity DESC) AS pct,
+    CUME_DIST() OVER(PARTITION BY CustomerID ORDER BY Quantity DESC) AS cum,
+    CustomerID,Quantity FROM orders
+) AS t JOIN (SELECT CustomerID,COUNT(*) AS Customer_Num FROM orders GROUP BY CustomerID ORDER BY CustomerID) AS p
+ON t.CustomerID = p.CustomerID;
+--->
++─────────────+──────+───────────────+──────+──────+───────────+
+| CustomerID  | rnk  | Customer_Num  | pct  | cum  | Quantity  |
++─────────────+──────+───────────────+──────+──────+───────────+
+| 2           | 1    | 2             | 0    | 0.5  | 5         |
+| 2           | 2    | 2             | 1    | 1    | 1         |
+| 4           | 1    | 5             | 0    | 0.2  | 35        |
+| 4           | 2    | 5             | 0.25 | 0.4  | 25        |
+| 4           | 3    | 5             | 0.5  | 0.8  | 20        |
+| 4           | 3    | 5             | 0.5  | 0.8  | 20        |
+| 4           | 5    | 5             | 1    | 1    | 15        |
++─────────────+──────+───────────────+──────+──────+───────────+
+1.percent_rank()按照' (rank-1) / (rows-1) '进行计算。其中，rank为RANK()函数产生的序号，rows为当前窗口的记录总行数。
+2.cume_dist()按照' rank / rows '进行计算。
+```
+
+```mysql
+# 窗口平移函数：lead(n)/lag(n)
+
+>>> 查询每个用户距离上次购物时间差
+SELECT CustomerID,OrderDate,LastDate,(OrderDate-LastDate) AS date_diff FROM
+(SELECT CustomerID,OrderDate,Quantity,
+    LAG(OrderDate,1) OVER(PARTITION BY CustomerID ORDER BY OrderDate) AS LastDate
+    FROM orders
+) AS t;
+--->
++─────────────+────────────+─────────────+────────────+
+| CustomerID  | OrderDate  | LastDate    | 距离上次购物时间差  |
++─────────────+────────────+─────────────+────────────+
+| 2           | 1996-09-18 |             |            |
+| 2           | 1996-09-20 | 1996-09-18  | 2          |
+| 4           | 1996-10-16 |             |            |
+| 4           | 1996-11-11 | 1996-10-16  | 95         |
+| 4           | 1996-11-16 | 1996-11-11  | 5          |
+| 4           | 1996-12-10 | 1996-11-16  | 94         |
+| 4           | 1996-12-22 | 1996-12-10  | 12         |
++─────────────+────────────+─────────────+────────────+
+1.lead(n)：窗口往前平移n个单位
+```
+
+```mysql
+# 头尾函数：first_value(expr)/last_value(expr)
+
+>>> 查询截止到当前订单，按照日期排序第一个订单和最后一个订单的订单金额。
+SELECT * FROM
+(SELECT CustomerID,OrderDate,Quantity,
+    FIRST_VALUE(Quantity) OVER(PARTITION BY CustomerID ORDER BY OrderDate) AS '第一笔订单数量',
+    LAST_VALUE(Quantity) OVER(PARTITION BY CustomerID ORDER BY OrderDate) AS '当前订单数量'
+    FROM orders
+) AS t;
+--->
++─────────────+────────────+───────────+──────────+─────────+
+| CustomerID  | OrderDate  | Quantity  | 第一笔订单数量  | 当前订单数量  |
++─────────────+────────────+───────────+──────────+─────────+
+| 2           | 1996-09-18 | 1         | 1        | 1       |
+| 2           | 1996-09-20 | 5         | 1        | 5       |
+| 4           | 1996-10-16 | 15        | 15       | 15      |
+| 4           | 1996-11-11 | 20        | 15       | 20      |
+| 4           | 1996-11-16 | 20        | 15       | 20      |
+| 4           | 1996-12-10 | 25        | 15       | 25      |
+| 4           | 1996-12-22 | 35        | 15       | 35      |
++─────────────+────────────+───────────+──────────+─────────+
+
+```
+
+```mysql
+# 其他函数：nth_value(expr,n) / nfile(n)
+
+# nth_value(expr,n)
+>>> 查询每个用户排名第2和第4的订单量
+SELECT * FROM
+(SELECT CustomerID,Quantity,
+    NTH_VALUE(Quantity,2) OVER(PARTITION BY CustomerID ORDER BY Quantity) AS second_qnt,
+    NTH_VALUE(Quantity,4) OVER(PARTITION BY CustomerID ORDER BY Quantity) AS third_qnt
+    FROM orders
+) AS t;
+--->
++─────────────+───────────+─────────────+────────────+
+| CustomerID  | Quantity  | second_qnt  | third_qnt  |
++─────────────+───────────+─────────────+────────────+
+| 2           | 1         |             |            |
+| 2           | 5         | 5           |            |
+| 4           | 15        |             |            |
+| 4           | 20        | 20          |            |
+| 4           | 20        | 20          |            |
+| 4           | 25        | 20          | 25         |
+| 4           | 35        | 20          | 25         |
++─────────────+───────────+─────────────+────────────+
+
+------------------------------------------------------------------------
+# nfile(n)
+>>> 将每个用户的订单按照订单量分成3组
+SELECT * FROM
+(SELECT CustomerID,Quantity,
+    NTILE(3) OVER(PARTITION BY CustomerID ORDER BY Quantity) AS nt
+    FROM orders
+) AS t;
+--->
++─────────────+───────────+─────+
+| CustomerID  | Quantity  | nt  |
++─────────────+───────────+─────+
+| 2           | 1         | 1   |
+| 2           | 5         | 2   |
+| 4           | 15        | 1   |
+| 4           | 20        | 1   |
+| 4           | 20        | 2   |
+| 4           | 25        | 2   |
+| 4           | 35        | 3   |
++─────────────+───────────+─────+
+1.数据不一定完全平均
+
+------------------------------------------------------------------------
+# BETWEEN frame_start AND frame_end
+
+>>> 查询本订单和按时间顺序前后两个订单的平均订单金额
+SELECT * FROM
+(SELECT CustomerID,OrderDate,Quantity,
+    AVG(Quantity) OVER(PARTITION BY CustomerID ORDER BY OrderDate ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING) AS avg_num
+    FROM orders
+) AS t;
+--->
++─────────────+────────────+───────────+──────────+
+| CustomerID  | OrderDate  | Quantity  | avg_num  |
++─────────────+────────────+───────────+──────────+
+| 2           | 1996-09-18 | 1         | 3.0000   |=(1+5)/2
+| 2           | 1996-09-20 | 5         | 3.0000   |
+| 4           | 1996-10-16 | 15        | 17.5000  |=(15+20)/3
+| 4           | 1996-11-11 | 20        | 18.3333  |=(15+20+20)/3
+| 4           | 1996-11-16 | 20        | 21.6667  |=(20+20+25)/3
+| 4           | 1996-12-10 | 25        | 26.6667  |
+| 4           | 1996-12-22 | 35        | 30.0000  |=(25+35)/2
++─────────────+────────────+───────────+──────────+
+1.滑动窗口:
+CURRENT ROW 边界是当前行，一般和其他范围关键字一起使用
+UNBOUNDED PRECEDING 边界是分区中的第一行
+UNBOUNDED FOLLOWING 边界是分区中的最后一行
+expr PRECEDING  边界是当前行减去expr的值
+expr FOLLOWING  边界是当前行加上expr的值
+
+例：
+ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING 窗口范围是当前行、前一行、后一行一共三行记录。
+ROWS UNBOUNDED FOLLOWING 窗口范围是当前行到分区中的最后一行。
+ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING 窗口范围是当前分区中所有行，等同于不写。
+```
+
+```mysql
+# 聚合函数：sum/avg/max/min/count
+
+>>> 每个用户按照订单日期，截止到当前的累计订单金额/平均订单金额/最大订单金额/最小订单金额/订单数是多少？
+SELECT * FROM
+(SELECT CustomerID,OrderDate,Quantity,
+    SUM(Quantity) OVER w AS sum1,
+    AVG(Quantity) OVER w AS avg1,
+    MAX(Quantity) OVER w AS max1,
+    MIN(Quantity) OVER w AS min1,
+    COUNT(Quantity) OVER w AS count1
+    FROM orders
+    WINDOW w AS (PARTITION BY CustomerID ORDER BY OrderID,OrderDate)
+) AS t;
+--->
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+| CustomerID  | OrderDate  | Quantity  | sum1  | avg1    | max1  | min1  | count1  |
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+| 2           | 1996-09-18 | 1         | 1     | 1.0000  | 1     | 1     | 1       |
+| 2           | 1996-09-20 | 5         | 6     | 3.0000  | 5     | 1     | 2       |
+| 4           | 1996-12-10 | 25        | 25    | 25.0000 | 25    | 25    | 1       |
+| 4           | 1996-12-22 | 35        | 60    | 30.0000 | 35    | 25    | 2       |
+| 4           | 1996-10-16 | 15        | 75    | 25.0000 | 35    | 15    | 3       |
+| 4           | 1996-11-11 | 20        | 95    | 23.7500 | 35    | 15    | 4       |
+| 4           | 1996-11-16 | 20        | 115   | 23.0000 | 35    | 15    | 5       |
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+1.将window放到最后，使代码简洁。
+```
+
+
+
+
+```mysql
 
 ```
