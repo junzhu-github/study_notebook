@@ -1,7 +1,7 @@
 <!--
  * @Date: 2019-10-24 11:12:53
  * @Author: YING
- * @LastEditTime : 2020-02-06 20:04:59
+ * @LastEditTime : 2020-02-11 15:10:49
  -->
 
 # MYSQL学习记录
@@ -603,6 +603,40 @@ SELECT DAY('2008-05-15');
 +-------------------+
 |                15 |
 +-------------------+
+
+# 提取年-EXTRACT()
+# EXTRACT(part FROM date)
+SELECT EXTRACT(YEAR_MONTH FROM "2017-06-15 09:34:21");
+--->
++─────────────────────────────────────────────────+
+| EXTRACT(YEAR_MONTH FROM "2017-06-15 09:34:21")  |
++─────────────────────────────────────────────────+
+| 201706                                          |
++─────────────────────────────────────────────────+
+1.part参数：
++─────────────────────+
+| MICROSECOND         |
+| SECOND              |
+| MINUTE              |
+| HOUR                |
+| DAY                 |
+| WEEK                |
+| MONTH               |
+| QUARTER             |
+| YEAR                |
+| SECOND_MICROSECOND  |
+| MINUTE_MICROSECOND  |
+| MINUTE_SECOND       |
+| HOUR_MICROSECOND    |
+| HOUR_SECOND         |
+| HOUR_MINUTE         |
+| DAY_MICROSECOND     |
+| DAY_SECOND          |
+| DAY_MINUTE          |
+| DAY_HOUR            |
+| ★YEAR_MONTH         |
++─────────────────────+
+2.EXTRACT后的数据格式是实数，不再是日期格式
 ```
 
 ```mysql
@@ -698,7 +732,30 @@ SELECT DATE_FORMAT('2008-05-15 22:23:00', '%W %D %M %Y');
 | %%    | A literal “%” character                                                                          |
 | %x    | x, for any “x” not listed above                                                                  |
 +───────+──────────────────────────────────────────────────────────────────────────────────────────────────+
+```
 
+```mysql
+# 数据类型转化
+# CAST(value AS datatype)
+SELECT CAST("2017-08-29" AS DATE);
+--->
++─────────────────────────────+
+| CAST("2017-08-29" AS DATE)  |
++─────────────────────────────+
+| 2017-08-29                  |
++─────────────────────────────+
+1.datatype类型：
++───────────+────────────────────────────────────────────────────────────+
+| Value     | Description                                                |
++───────────+────────────────────────────────────────────────────────────+
+| DATE      | Converts value to DATE. Format: "YYYY-MM-DD"               |
+| DATETIME  | Converts value to DATETIME. Format: "YYYY-MM-DD HH:MM:SS"  |
+| TIME      | Converts value to TIME. Format: "HH:MM:SS"                 |
+| CHAR      | Converts value to CHAR (a fixed length string)             |
+| SIGNED    | Converts value to SIGNED (a signed 64-bit integer)         |
+| UNSIGNED  | Converts value to UNSIGNED (an unsigned 64-bit integer)    |
+| BINARY    | Converts value to BINARY (a binary string)                 |
++───────────+────────────────────────────────────────────────────────────+
 ```
 
 #### 字符查询
@@ -1031,22 +1088,22 @@ expr FOLLOWING  边界是当前行加上expr的值
 ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING 窗口范围是当前行、前一行、后一行一共三行记录。
 ROWS UNBOUNDED FOLLOWING 窗口范围是当前行到分区中的最后一行。
 ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING 窗口范围是当前分区中所有行，等同于不写。
+
+2.滑动窗口等于在PARTITION BY分区内再创建子集运算。
 ```
 
 ```mysql
 # 聚合函数：sum/avg/max/min/count
 
 >>> 每个用户按照订单日期，截止到当前的累计订单金额/平均订单金额/最大订单金额/最小订单金额/订单数是多少？
-SELECT * FROM
-(SELECT CustomerID,OrderDate,Quantity,
+SELECT CustomerID,OrderDate,Quantity,
     SUM(Quantity) OVER w AS sum1,
     AVG(Quantity) OVER w AS avg1,
     MAX(Quantity) OVER w AS max1,
     MIN(Quantity) OVER w AS min1,
     COUNT(Quantity) OVER w AS count1
-    FROM orders
-    WINDOW w AS (PARTITION BY CustomerID ORDER BY OrderID,OrderDate)
-) AS t;
+FROM orders
+WINDOW w AS (PARTITION BY CustomerID ORDER BY OrderID,OrderDate)
 --->
 +─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
 | CustomerID  | OrderDate  | Quantity  | sum1  | avg1    | max1  | min1  | count1  |
@@ -1060,11 +1117,321 @@ SELECT * FROM
 | 4           | 1996-11-16 | 20        | 115   | 23.0000 | 35    | 15    | 5       |
 +─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
 1.将window放到最后，使代码简洁。
+
+>>> 按照每个用户计算累计订单金额/平均订单金额/最大订单金额/最小订单金额/订单数是多少？
+SELECT CustomerID,OrderDate,Quantity,
+    SUM(Quantity) OVER w AS sum1,
+    AVG(Quantity) OVER w AS avg1,
+    MAX(Quantity) OVER w AS max1,
+    MIN(Quantity) OVER w AS min1,
+    COUNT(Quantity) OVER w AS count1
+FROM orders
+WINDOW w AS (PARTITION BY CustomerID);
+--->
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+| CustomerID  | OrderDate  | Quantity  | sum1  | avg1    | max1  | min1  | count1  |
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+| 2           | 1996-09-18 | 1         | 6     | 3.0000  | 5     | 1     | 2       |
+| 2           | 1996-09-20 | 5         | 6     | 3.0000  | 5     | 1     | 2       |
+| 4           | 1996-10-16 | 15        | 115   | 23.0000 | 35    | 15    | 5       |
+| 4           | 1996-11-11 | 20        | 115   | 23.0000 | 35    | 15    | 5       |
+| 4           | 1996-11-16 | 20        | 115   | 23.0000 | 35    | 15    | 5       |
+| 4           | 1996-12-10 | 25        | 115   | 23.0000 | 35    | 15    | 5       |
+| 4           | 1996-12-22 | 35        | 115   | 23.0000 | 35    | 15    | 5       |
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+1.没有ORDER BY，不再逐行累计。
+
+>>> 按照日期计算累计订单金额/平均订单金额/最大订单金额/最小订单金额/订单数是多少？
+SELECT CustomerID,OrderDate,Quantity,
+    SUM(Quantity) OVER w AS sum1,
+    AVG(Quantity) OVER w AS avg1,
+    MAX(Quantity) OVER w AS max1,
+    MIN(Quantity) OVER w AS min1,
+    COUNT(Quantity) OVER w AS count1
+FROM orders
+WINDOW w AS (ORDER BY OrderDate);
+--->
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+| CustomerID  | OrderDate  | Quantity  | sum1  | avg1    | max1  | min1  | count1  |
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+| 2           | 1996-09-18 | 1         | 1     | 1.0000  | 1     | 1     | 1       |
+| 2           | 1996-09-20 | 5         | 6     | 3.0000  | 5     | 1     | 2       |
+| 4           | 1996-10-16 | 15        | 21    | 7.0000  | 15    | 1     | 3       |
+| 4           | 1996-11-11 | 20        | 41    | 10.2500 | 20    | 1     | 4       |
+| 4           | 1996-11-16 | 20        | 61    | 12.2000 | 20    | 1     | 5       |
+| 4           | 1996-12-10 | 25        | 86    | 14.3333 | 25    | 1     | 6       |
+| 4           | 1996-12-22 | 35        | 121   | 17.2857 | 35    | 1     | 7       |
++─────────────+────────────+───────────+───────+─────────+───────+───────+─────────+
+1.没有PARTITION BY，等于把整张表作为一个分区。
 ```
 
+## 案例
 
-
+### 环比计算
 
 ```mysql
+# 解法1：构建一张表，其中月份原始表的月份上+1，再汇总，与连接原始表的汇总表连接
+SELECT
+    t1.y_m,
+    t1.sum_qnt,
+    (t1.sum_qnt - t3.add_sum_qnt) '环比差',
+    CONCAT(ROUND((t1.sum_qnt / t3.add_sum_qnt - 1) * 100),'%') '环比'
+FROM
+    (SELECT
+        EXTRACT(YEAR_MONTH FROM OrderDate) y_m,
+        SUM(Quantity) sum_qnt
+    FROM
+        orders2
+    GROUP BY EXTRACT(YEAR_MONTH FROM OrderDate)
+    ORDER BY 1) t1
+        LEFT JOIN
+    (SELECT
+        EXTRACT(YEAR_MONTH FROM add_mth) add_y_m,
+        SUM(Quantity) add_sum_qnt
+    FROM
+        (SELECT
+        Quantity, TIMESTAMPADD(MONTH, 1, OrderDate) add_mth
+    FROM
+        orders2) t2
+    GROUP BY EXTRACT(YEAR_MONTH FROM add_mth)
+    ORDER BY 1) t3
+ON t1.y_m = t3.add_y_m
+--->
++─────────+──────────+────────+───────+
+| y_m     | sum_qnt  | 环比差  | 环比  |
++─────────+──────────+────────+───────+
+| 199607  | 1462     |        |       |
+| 199608  | 1322     | -140   | -10%  |
+| 199609  | 1124     | -198   | -15%  |
+| 199610  | 1738     | 614    | 55%   |
+| 199611  | 1735     | -3     | 0%    |
+| 199612  | 2200     | 465    | 27%   |
+| 199701  | 2401     | 201    | 9%    |
+| 199702  | 761      | -1640  | -68%  |
++─────────+──────────+────────+───────+
 
+1.分表说明
+t1:
++─────────+──────────+
+| y_m     | sum_qnt  |
++─────────+──────────+
+| 199607  | 1462     |
+| 199608  | 1322     |
+| 199609  | 1124     |
+| 199610  | 1738     |
+| 199611  | 1735     |
+| 199612  | 2200     |
+| 199701  | 2401     |
+| 199702  | 761      |
++─────────+──────────+
+
+t3:
++──────────+──────────────+
+| add_y_m  | add_sum_qnt  |
++──────────+──────────────+
+| 199608   | 1462         |
+| 199609   | 1322         |
+| 199610   | 1124         |
+| 199611   | 1738         |
+| 199612   | 1735         |
+| 199701   | 2200         |
+| 199702   | 2401         |
+| 199703   | 761          |
++──────────+──────────────+
+```
+
+```mysql
+# 解法2：原始表按月份汇总后加一列常数项，再利用窗口函数
+SELECT y_m,sum_qnt,(sum_qnt-lg_qnt) '环比差',concat(round((sum_qnt/lg_qnt-1)*100),'%') '环比' FROM (
+    SELECT y_m,sum_qnt,LAG(sum_qnt,1) OVER(PARTITION BY n ORDER BY y_m) lg_qnt FROM (
+        SELECT * FROM (
+            (SELECT extract(year_month FROM OrderDate) y_m,sum(Quantity) sum_qnt FROM orders2 GROUP BY extract(year_month FROM OrderDate) ORDER BY 1) AS t1,
+            (SELECT 1 AS n) AS t2
+        )
+    ) AS t3
+) t4;
+--->
++─────────+──────────+────────+───────+
+| y_m     | sum_qnt  | 环比差  | 环比  |
++─────────+──────────+────────+───────+
+| 199607  | 1462     |        |       |
+| 199608  | 1322     | -140   | -10%  |
+| 199609  | 1124     | -198   | -15%  |
+| 199610  | 1738     | 614    | 55%   |
+| 199611  | 1735     | -3     | 0%    |
+| 199612  | 2200     | 465    | 27%   |
+| 199701  | 2401     | 201    | 9%    |
+| 199702  | 761      | -1640  | -68%  |
++─────────+──────────+────────+───────+
+
+1.分表说明
+t1:
++─────────+──────────+
+| y_m     | sum_qnt  |
++─────────+──────────+
+| 199607  | 1462     |
+| 199608  | 1322     |
+| 199609  | 1124     |
+| 199610  | 1738     |
+| 199611  | 1735     |
+| 199612  | 2200     |
+| 199701  | 2401     |
+| 199702  | 761      |
++─────────+──────────+
+
+t3：
++─────────+──────────+────+
+| y_m     | sum_qnt  | n  |
++─────────+──────────+────+
+| 199607  | 1462     | 1  |
+| 199608  | 1322     | 1  |
+| 199609  | 1124     | 1  |
+| 199610  | 1738     | 1  |
+| 199611  | 1735     | 1  |
+| 199612  | 2200     | 1  |
+| 199701  | 2401     | 1  |
+| 199702  | 761      | 1  |
++─────────+──────────+────+
+
+t4：
++─────────+──────────+─────────+
+| y_m     | sum_qnt  | lg_qnt  |
++─────────+──────────+─────────+
+| 199607  | 1462     |         |
+| 199608  | 1322     | 1462    |
+| 199609  | 1124     | 1322    |
+| 199610  | 1738     | 1124    |
+| 199611  | 1735     | 1738    |
+| 199612  | 2200     | 1735    |
+| 199701  | 2401     | 2200    |
+| 199702  | 761      | 2401    |
++─────────+──────────+─────────+
+```
+
+### 中位数计算
+
+```mysql
+# 示例数据
++──────────+─────────────+────────────+───────────+
+| OrderID  | CustomerID  | OrderDate  | Quantity  |
++──────────+─────────────+────────────+───────────+
+| 10308    | 2           | 1996-09-18 | 1         |
+| 10309    | 2           | 1996-09-20 | 5         |
+| 10383    | 4           | 1996-10-16 | 15        |
+| 10383    | 4           | 1996-11-11 | 20        |
+| 10383    | 4           | 1996-11-16 | 20        |
+| 10355    | 4           | 1996-12-10 | 25        |
+| 10355    | 4           | 1996-12-22 | 35        |
++──────────+─────────────+────────────+───────────+
+
+>>> 按数量排序求中位数
+SELECT AVG(Quantity) FROM (
+    SELECT Quantity,ROW_NUMBER() OVER(ORDER BY Quantity) rnk FROM orders) t1
+    JOIN
+    (SELECT COUNT(*) AS n FROM orders) t2
+    ON rnk = CEIL(n/2) OR rnk = FLOOR(n/2+1);
+--->
++────────────────+
+| AVG(Quantity)  |
++────────────────+
+| 20.0000        |
++────────────────+
+```
+
+### 计算留存率
+
+```mysql
+# 示例数据：表login
++─────────+────────────+
+| userid  | logindate  |
++─────────+────────────+
+| 89      | 2020-01-03 |
+| 59      | 2020-01-04 |
+| 29      | 2020-01-08 |
+| 5       | 2020-01-09 |
+| 32      | 2020-01-09 |
+| 70      | 2020-01-06 |
+| 63      | 2020-01-04 |
+
+
+>>> 计算7天内留存人数
+SELECT first_logindate,
+    sum(CASE WHEN gap = 0 THEN 1 ELSE 0 END) d0,
+    sum(CASE WHEN gap = 1 THEN 1 ELSE 0 END) d1,
+    sum(CASE WHEN gap = 2 THEN 1 ELSE 0 END) d2,
+    sum(CASE WHEN gap = 3 THEN 1 ELSE 0 END) d3,
+    sum(CASE WHEN gap = 4 THEN 1 ELSE 0 END) d4,
+    sum(CASE WHEN gap = 5 THEN 1 ELSE 0 END) d5,
+    sum(CASE WHEN gap = 6 THEN 1 ELSE 0 END) d6,
+    sum(CASE WHEN gap = 7 THEN 1 ELSE 0 END) d7,
+    sum(CASE WHEN gap > 7 THEN 1 ELSE 0 END) d7p
+FROM (
+    SELECT DISTINCT t1.UserId,t1.LoginDate,t2.first_logindate,(t1.LoginDate-t2.first_logindate) gap FROM login t1
+    JOIN
+    (SELECT UserId,LoginDate AS first_logindate FROM login GROUP BY UserId ORDER BY LoginDate) t2
+    ON t1.UserId = t2.UserId) t3
+GROUP BY first_logindate;
+--->
++──────────────────+─────+─────+─────+─────+─────+─────+─────+─────+──────+
+| first_logindate  | d0  | d1  | d2  | d3  | d4  | d5  | d6  | d7  | d7p  |
++──────────────────+─────+─────+─────+─────+─────+─────+─────+─────+──────+
+| 2020-01-01       | 15  | 4   | 4   | 4   | 5   | 4   | 3   | 4   | 15   |
+| 2020-01-02       | 8   | 1   | 2   | 0   | 1   | 4   | 3   | 1   | 5    |
+| 2020-01-03       | 11  | 3   | 3   | 3   | 2   | 5   | 3   | 2   | 2    |
+| 2020-01-04       | 9   | 4   | 5   | 6   | 4   | 3   | 2   | 3   | 0    |
+| 2020-01-05       | 5   | 3   | 1   | 1   | 2   | 3   | 3   | 0   | 0    |
+| 2020-01-06       | 11  | 2   | 5   | 2   | 2   | 1   | 0   | 0   | 0    |
+| 2020-01-07       | 11  | 4   | 6   | 1   | 3   | 0   | 0   | 0   | 0    |
+| 2020-01-08       | 11  | 2   | 1   | 7   | 0   | 0   | 0   | 0   | 0    |
+| 2020-01-09       | 9   | 3   | 1   | 0   | 0   | 0   | 0   | 0   | 0    |
+| 2020-01-10       | 3   | 2   | 0   | 0   | 0   | 0   | 0   | 0   | 0    |
+| 2020-01-11       | 6   | 0   | 0   | 0   | 0   | 0   | 0   | 0   | 0    |
++──────────────────+─────+─────+─────+─────+─────+─────+─────+─────+──────+
+
+
+
+----------------------------------------------------------------------------------
+>>> 计算7天内留存率
+SELECT first_logindate,d0,
+    concat(round(d1 / d0 * 100 , 2),'%') d1_pnt,
+    concat(round(d2 / d0 * 100 , 2),'%') d2_pnt,
+    concat(round(d3 / d0 * 100 , 2),'%') d3_pnt,
+    concat(round(d4 / d0 * 100 , 2),'%') d4_pnt,
+    concat(round(d5 / d0 * 100 , 2),'%') d5_pnt,
+    concat(round(d6 / d0 * 100 , 2),'%') d6_pnt,
+    concat(round(d7 / d0 * 100 , 2),'%') d7_pnt
+FROM (
+    SELECT first_logindate,
+        sum(CASE WHEN gap = 0 THEN 1 ELSE 0 END) d0,
+        sum(CASE WHEN gap = 1 THEN 1 ELSE 0 END) d1,
+        sum(CASE WHEN gap = 2 THEN 1 ELSE 0 END) d2,
+        sum(CASE WHEN gap = 3 THEN 1 ELSE 0 END) d3,
+        sum(CASE WHEN gap = 4 THEN 1 ELSE 0 END) d4,
+        sum(CASE WHEN gap = 5 THEN 1 ELSE 0 END) d5,
+        sum(CASE WHEN gap = 6 THEN 1 ELSE 0 END) d6,
+        sum(CASE WHEN gap = 7 THEN 1 ELSE 0 END) d7,
+        sum(CASE WHEN gap > 7 THEN 1 ELSE 0 END) d7p
+    FROM (
+        SELECT DISTINCT t1.UserId,t1.LoginDate,t2.first_logindate,(t1.LoginDate-t2.first_logindate) gap FROM login t1
+        JOIN
+        (SELECT UserId,LoginDate AS first_logindate FROM login GROUP BY UserId ORDER BY LoginDate) t2
+        ON t1.UserId = t2.UserId) t3
+    GROUP BY first_logindate
+) t4;
+--->
++──────────────────+─────+─────────+─────────+─────────+─────────+─────────+─────────+─────────+
+| first_logindate  | d0  | d1_pnt  | d2_pnt  | d3_pnt  | d4_pnt  | d5_pnt  | d6_pnt  | d7_pnt  |
++──────────────────+─────+─────────+─────────+─────────+─────────+─────────+─────────+─────────+
+| 2020-01-01       | 15  | 26.67%  | 26.67%  | 26.67%  | 33.33%  | 26.67%  | 20.00%  | 26.67%  |
+| 2020-01-02       | 8   | 12.50%  | 25.00%  | 0.00%   | 12.50%  | 50.00%  | 37.50%  | 12.50%  |
+| 2020-01-03       | 11  | 27.27%  | 27.27%  | 27.27%  | 18.18%  | 45.45%  | 27.27%  | 18.18%  |
+| 2020-01-04       | 9   | 44.44%  | 55.56%  | 66.67%  | 44.44%  | 33.33%  | 22.22%  | 33.33%  |
+| 2020-01-05       | 5   | 60.00%  | 20.00%  | 20.00%  | 40.00%  | 60.00%  | 60.00%  | 0.00%   |
+| 2020-01-06       | 11  | 18.18%  | 45.45%  | 18.18%  | 18.18%  | 9.09%   | 0.00%   | 0.00%   |
+| 2020-01-07       | 11  | 36.36%  | 54.55%  | 9.09%   | 27.27%  | 0.00%   | 0.00%   | 0.00%   |
+| 2020-01-08       | 11  | 18.18%  | 9.09%   | 63.64%  | 0.00%   | 0.00%   | 0.00%   | 0.00%   |
+| 2020-01-09       | 9   | 33.33%  | 11.11%  | 0.00%   | 0.00%   | 0.00%   | 0.00%   | 0.00%   |
+| 2020-01-10       | 3   | 66.67%  | 0.00%   | 0.00%   | 0.00%   | 0.00%   | 0.00%   | 0.00%   |
+| 2020-01-11       | 6   | 0.00%   | 0.00%   | 0.00%   | 0.00%   | 0.00%   | 0.00%   | 0.00%   |
++──────────────────+─────+─────────+─────────+─────────+─────────+─────────+─────────+─────────+
 ```
