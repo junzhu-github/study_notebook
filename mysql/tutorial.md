@@ -1,7 +1,7 @@
 <!--
  * @Date: 2019-10-24 11:12:53
  * @Author: YING
- * @LastEditTime : 2020-02-11 15:10:49
+ * @LastEditTime : 2020-02-11 17:14:05
  -->
 
 # MYSQL学习记录
@@ -67,7 +67,7 @@ LIKE students;
 -----------------------------------------------
 
 # 复制表格结构体 + 数据
-CREATE DATABASE [IF NOT EXISTS] db_name 
+CREATE DATABASE [IF NOT EXISTS] db_name
 AS SELECT * FROM db;
 
 # 示例
